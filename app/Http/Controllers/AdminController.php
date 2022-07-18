@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables as DataTables;
 
 use App\Models\Barang;
+use App\Models\BarangMasuk;
 use App\Models\Kategori;
 use App\Models\Supplier;
 
@@ -84,6 +85,24 @@ class AdminController extends Controller
             $result = Supplier::where('tipe', 'SU')->get();
 
             return DataTables::of($result)->toJson();
+        } else if ($request->req == 'getBarangMasuk') {
+            $result = BarangMasuk::get();
+
+            return DataTables::of($result)->addColumn('supplier', function ($dta) {
+                return $dta->supplier ? $dta->supplier->nama : '-';
+            })->addColumn('jum_barang', function ($dta) {
+                return count($dta->detail_barang);
+            })->addColumn('totalitem', function ($dta) {
+                $get = explode('.', $dta->totalitem);
+                return number_format($get[0]);
+            })->addColumn('subtotal', function ($dta) {
+                $get = explode('.', $dta->subtotal);
+                return number_format($get[0]) . ',00';
+            })->addColumn('action', function ($dta) {
+                return '<div class="text-center">
+				<button type="button" class="btn btn-secondary btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->id . '"><i class="bx bx-detail"></i></button>
+				</div>';
+            })->rawColumns(['action'])->toJson();
         }
     }
 }

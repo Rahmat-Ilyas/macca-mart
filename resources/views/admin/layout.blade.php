@@ -119,8 +119,8 @@
                                     <div data-i18n="Account">List Data Barang</div>
                                 </a>
                             </li>
-                            <li class="menu-item">
-                                <a href="pages-account-settings-notifications.html" class="menu-link">
+                            <li class="menu-item" id="barang-masuk">
+                                <a href="{{ url('admin/data-barang/barang-masuk') }}" class="menu-link">
                                     <div data-i18n="Notifications">Barang Masuk</div>
                                 </a>
                             </li>
