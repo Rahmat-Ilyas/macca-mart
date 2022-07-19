@@ -142,8 +142,8 @@
                                     <div data-i18n="Error">Data Supplier</div>
                                 </a>
                             </li>
-                            <li class="menu-item">
-                                <a href="pages-misc-under-maintenance.html" class="menu-link">
+                            <li class="menu-item" id="perbandingan-supplier">
+                                <a href="{{ url('admin/supplier/perbandingan-supplier') }}" class="menu-link">
                                     <div data-i18n="Under Maintenance">Perbandingan Supplier</div>
                                 </a>
                             </li>

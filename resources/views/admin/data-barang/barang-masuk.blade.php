@@ -13,18 +13,6 @@
             <h5 class="card-header pb-3">Data Barang Masuk</h5>
             <hr>
             <div class="card-datatable table-responsive px-4 pb-4">
-                <div class="row">
-                    <div class="col-sm-4">
-                        <label for="kategori">Kategori</label>
-                        <select name="kategori" id="kategori" class="select2 form-select">
-                            <option value="SEMUA">SEMUA KATEGORI</option>
-                            @foreach ($kategori as $kat)
-                                <option value="{{ $kat->jenis }}">{{ $kat->jenis }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <hr>
                 <table class="table table-striped dataBarang" style="font-size: 12px;">
                     <thead>
                         <tr>
@@ -36,7 +24,7 @@
                             <th>Jumlah Item</th>
                             <th>Total Item</th>
                             <th>Total Harga</th>
-                            <th>Aksi</th>
+                            <th>Detail</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,16 +49,9 @@
                 "X-CSRF-TOKEN": "{{ csrf_token() }}"
             }
 
-            getData('SEMUA');
+            getData();
 
-            $('#kategori').change(function(e) {
-                e.preventDefault();
-
-                var jenis = $(this).val();
-                getData(jenis);
-            });
-
-            function getData(jenis) {
+            function getData() {
                 $(".dataBarang").dataTable().fnDestroy();
                 $('.dataBarang').DataTable({
                     pageLength: 50,
@@ -86,8 +67,7 @@
                         method: "POST",
                         headers: headers,
                         data: {
-                            req: 'getBarangMasuk',
-                            jenis: jenis
+                            req: 'getBarangMasuk'
                         },
                         async: true,
                         error: function(res) {},

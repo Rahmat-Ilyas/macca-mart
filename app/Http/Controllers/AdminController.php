@@ -37,8 +37,7 @@ class AdminController extends Controller
     {
         return view('admin/' . $dir . '/' . $page, compact('id'));
     }
-
-    private $dept;
+    
     public  function datatable(Request $request)
     {
         if ($request->req == 'getBarang') {
@@ -81,15 +80,22 @@ class AdminController extends Controller
                 return $dta->jumitem($dta->jenis);
             })->toJson();
         } else if ($request->req == 'getSupplier') {
-            $this->dept = $request->dept;
-            $result = Supplier::where('tipe', 'SU')->get();
+            $result = Supplier::select('*')->where('tipe', 'SU')->get();
 
             return DataTables::of($result)->toJson();
+        } else if ($request->req == 'getPrbnSupplier') {
+            $result = Supplier::select('*')->where('tipe', 'SU')->get();
+
+            return DataTables::of($result)->addColumn('item_masuk', function ($dta) {
+                return $dta->item_masuk($dta->kode);
+            })->toJson();
         } else if ($request->req == 'getBarangMasuk') {
-            $result = BarangMasuk::get();
+            $result = BarangMasuk::select('notransaksi', 'tanggal', 'kodekantor', 'kodesupel', 'totalitem', 'subtotal', 'tipe')->where('tipe', 'BL')->get();
 
             return DataTables::of($result)->addColumn('supplier', function ($dta) {
                 return $dta->supplier ? $dta->supplier->nama : '-';
+            })->addColumn('tanggal', function ($dta) {
+                return date('d/m/Y H:i', strtotime($dta->tanggal));
             })->addColumn('jum_barang', function ($dta) {
                 return count($dta->detail_barang);
             })->addColumn('totalitem', function ($dta) {
@@ -100,7 +106,7 @@ class AdminController extends Controller
                 return number_format($get[0]) . ',00';
             })->addColumn('action', function ($dta) {
                 return '<div class="text-center">
-				<button type="button" class="btn btn-secondary btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->id . '"><i class="bx bx-detail"></i></button>
+				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->id . '"><i class="bx bx-detail"></i></button>
 				</div>';
             })->rawColumns(['action'])->toJson();
         }
