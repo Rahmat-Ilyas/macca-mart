@@ -87,7 +87,13 @@ class AdminController extends Controller
             $result = Supplier::select('*')->where('tipe', 'SU')->get();
 
             return DataTables::of($result)->addColumn('item_masuk', function ($dta) {
-                return $dta->item_masuk($dta->kode);
+                return $dta->item_masuk($dta->kode) . ' Item';
+            })->addColumn('rt_pembelian', function ($dta) {
+                return $dta->rt_pembelian($dta->kode) . ' Item';
+            })->addColumn('rt_pengeluaran', function ($dta) {
+                return 'Rp.' . number_format($dta->rt_pengeluaran($dta->kode));
+            })->addColumn('rt_rentangwaktu', function ($dta) {
+                return 'per ' . $dta->rt_rentangwaktu($dta->kode) . ' hari';
             })->toJson();
         } else if ($request->req == 'getBarangMasuk') {
             $result = BarangMasuk::select('notransaksi', 'tanggal', 'kodekantor', 'kodesupel', 'totalitem', 'subtotal', 'tipe')->where('tipe', 'BL')->get();

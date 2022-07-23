@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BarangKeluar extends Model
+class BKDetail extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_item_ik';
+    protected $table = 'tbl_ikdt';
     public $timestamps = false;
     protected $guarded = [];
 
-    public function detail_barang()
+    public function barang()
     {
-        return $this->hasMany(BKDetail::class, 'notransaksi', 'notransaksi');
+        return $this->belongsTo(Barang::class, 'kodeitem', 'kodeitem');
     }
 }

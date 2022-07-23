@@ -13,16 +13,20 @@
             <h5 class="card-header pb-3">Perbandingan Supplier</h5>
             <hr>
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="card-datatable table-responsive px-4 pb-4">
-                        <table class="table table-striped dataBarang" style="font-size: 12px;">
+                        <table class="table table-bordered dataBarang" style="font-size: 11px;">
                             <thead>
                                 <tr>
-                                    <th>Kode</th>
-                                    <th width="210">Nama Supplier</th>
-                                    <th>Item Masuk</th>
-                                    <th>Item Terjual</th>
-                                    <th>Presentase</th>
+                                    <th rowspan="2">Kode</th>
+                                    <th rowspan="2" width="210">Nama Supplier</th>
+                                    <th rowspan="2">Total Item</th>
+                                    <th colspan="4" class="text-center">Rata-Rata (Pembelian, Pengeluaran & Rentang Waktu Beli)</th>
+                                </tr>
+                                <tr>
+                                    <th>RT. Pembelian</th>
+                                    <th>RT. Pengeluaran</th>
+                                    <th>Rentang Waktu Pembelian</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -31,10 +35,10 @@
                         </table>
                     </div>
                 </div>
-                <div class="col-md-4">
+                {{-- <div class="col-md-4">
                     <h4 class="text-center mt-4">Grafik Presentase Penjualan</h4>
                     <div id="donutChart"></div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -97,14 +101,19 @@
                             name: 'item_masuk'
                         },
                         {
-                            data: 'kota',
-                            name: 'kota'
+                            data: 'rt_pembelian',
+                            name: 'rt_pembelian'
                         },
                         {
-                            data: 'provinsi',
-                            name: 'provinsi'
+                            data: 'rt_pengeluaran',
+                            name: 'rt_pengeluaran'
                         },
-                    ]
+                        {
+                            data: 'rt_rentangwaktu',
+                            name: 'rt_rentangwaktu'
+                        },
+                    ],
+                    order: [[2, 'desc']],
                 });
             }
         });
