@@ -10,6 +10,7 @@ use App\Models\Barang;
 use App\Models\BarangMasuk;
 use App\Models\Kategori;
 use App\Models\Supplier;
+use DateTime;
 
 class AdminController extends Controller
 {
@@ -122,10 +123,57 @@ class AdminController extends Controller
     {
         if ($request->req == 'getGrafik')
         {
-            if ($request->priode == 'minnguan')
+            $result = [];
+            if ($request->priode == 'mingguan')
             {
-                dd($request->waktu);
+                $waktu = explode('-W', $request->waktu);
+                $dto = new DateTime();
+                $dto->setISODate($waktu[0], $waktu[1]);
+                $df = $dto->format('Y-m-d');
+                $label = [];
+                $data = [];
+                for ($i = 0; $i < 7; $i++) {
+                    $date = date('Y-m-d', strtotime('+' . $i . ' days', strtotime($df)));
+                    $label[] = date('d M Y', strtotime($date));
+
+                    $getitemklr = DB::table('tbl_ikdt')->select('dateupd')->whereDate('dateupd', $date)->get();
+                    $data[] = count($getitemklr);
+                }
+                $title = 'Minggu ' . $waktu[1] . ', ' . $waktu[0];
+            } else if ($request->priode == 'bulanan') {
+                $waktu = explode('-', $request->waktu);
+                $jb = cal_days_in_month(CAL_GREGORIAN, $waktu[1], $waktu[0]);
+                $label = [];
+                $data = [];
+                for ($i = 1; $i <= $jb; $i++) {
+                    $date = $request->waktu . '-' . $i;
+                    $label[] = date('d M', strtotime($date));
+
+                    $getitemklr = DB::table('tbl_ikdt')->select('dateupd')->whereDate('dateupd', $date)->get();
+                    $data[] = count($getitemklr);
+                }
+                $title = 'Bulan ' . date('F', strtotime($date)) . ' ' . $waktu[0];
+            } else if ($request->priode == 'tahunan') {
+                $label = [];
+                $data = [];
+                for ($i = 1; $i <= 12; $i++) {
+                    $date = $request->waktu . '-' . $i . '-1';
+                    $label[] = date('F', strtotime($date));
+
+                    $getitemklr = DB::table('tbl_ikdt')->select('dateupd')->whereMonth('dateupd', $i)->whereYear('dateupd', $request->waktu)->get();
+                    $data[] = count($getitemklr);
+                }
+                $title = 'Tahun ' . $request->waktu;
+
             }
         }
+
+        $result = [
+            'title' => $title,
+            'label' => $label,
+            'data' => $data
+        ];
+
+        return response()->json($result, 200);
     }
 }

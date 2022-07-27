@@ -25,14 +25,16 @@
 
                     <div class="col-sm-3">
                         <label for="kategori">Pilih Priode Waktu</label>
-                        <input type="week" id="waktu" class="form-control" value="{{ date('Y').'-W'.date('W') }}"">
+                        <input type="week" id="waktu" class="form-control"
+                            value="{{ date('Y') . '-W' . date('W') }}"">
                     </div>
                 </div>
                 <hr>
                 <div>
                     <div class="card">
                         <div class="card-header header-elements p-3 my-n1">
-                            <h5 class="card-title mb-0 pl-0 pl-sm-2 p-2">Grafik Penjualan per <span id="lab-waktu" style="text-transform: capitalize;">Minggu {{ date('W, Y') }}</span></h5>
+                            <h5 class="card-title mb-0 pl-0 pl-sm-2 p-2">Grafik Penjualan per <span id="lab-waktu"
+                                    style="text-transform: capitalize;">Minggu {{ date('W, Y') }}</span></h5>
                         </div>
                         <div class="card-body">
                             <canvas id="barChart" class="chartjs" height="400"></canvas>
@@ -63,7 +65,7 @@
                 var priode = $(this).val();
                 var waktu;
                 if (priode == 'mingguan') {
-                    waktu = "{{ date('Y').'-W'.date('W') }}";
+                    waktu = "{{ date('Y') . '-W' . date('W') }}";
                     $('#waktu').attr('type', 'week').val(waktu);
                 } else if (priode == 'bulanan') {
                     waktu = "{{ date('Y-m') }}";
@@ -75,133 +77,104 @@
 
                 getData(priode, waktu);
             });
-            
-            $('#waktu').change(function (e) { 
+
+            $(document).on('change keyup', '#waktu', function(e) {
                 e.preventDefault();
                 var waktu = $(this).val();
                 var priode = $('#priode').val();
-                
+
                 getData(priode, waktu);
             });
 
-            getData('mingguan', "{{ date('Y').'-W'.date('W') }}");
+            getData('mingguan', "{{ date('Y') . '-W' . date('W') }}");
 
             function getData(priode, waktu) {
-                var strp = priode.substr(0, priode.length-2);
-                $('#lab-waktu').text(strp+' '+waktu)
-
+                const barChart = document.getElementById('barChart');
                 $.ajax({
-                    url     : url,
-                    method  : "POST",
-                    headers : headers,
-                    data 	: { 
+                    url: url,
+                    method: "POST",
+                    async: true,
+                    headers: headers,
+                    data: {
                         req: 'getGrafik',
                         priode: priode,
                         waktu: waktu,
                     },
-                    success : function(data) {
+                    success: function(data) {
+                        $('#lab-waktu').text(data.title);
+                        // Color Variables
+                        const cyanColor = '#28dac6';
+                        let borderColor, gridColor, tickColor;
+                        borderColor = '#f0f0f0';
+                        gridColor = '#f0f0f0';
+                        tickColor = 'rgba(0, 0, 0, 0.75)';
+
+                        var chartExist = Chart.getChart("barChart"); // <canvas> id
+                        if (chartExist != undefined)
+                            chartExist.destroy();
+
+                        const barChartVar = new Chart(barChart, {
+                            type: 'bar',
+                            data: {
+                                labels: data.label,
+                                datasets: [{
+                                    data: data.data,
+                                    backgroundColor: cyanColor,
+                                    borderColor: 'transparent',
+                                    maxBarThickness: 15,
+                                    borderRadius: {
+                                        topRight: 15,
+                                        topLeft: 15
+                                    }
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation: {
+                                    duration: 500
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        rtl: false,
+                                        backgroundColor: config.colors.white,
+                                        titleColor: config.colors.black,
+                                        bodyColor: config.colors.black,
+                                        borderWidth: 1,
+                                        borderColor: borderColor
+                                    },
+                                    legend: {
+                                        display: false
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        grid: {
+                                            color: gridColor,
+                                            borderColor: borderColor
+                                        },
+                                        ticks: {
+                                            color: tickColor
+                                        }
+                                    },
+                                    y: {
+                                        grid: {
+                                            color: gridColor,
+                                            borderColor: borderColor
+                                        },
+                                        ticks: {
+                                            stepSize: 100,
+                                            tickColor: gridColor,
+                                            color: tickColor
+                                        }
+                                    }
+                                }
+                            }
+                        });
                     }
                 });
 
-                // Color Variables
-                const cyanColor = '#28dac6';
-                let borderColor, gridColor, tickColor;
-                borderColor = '#f0f0f0';
-                gridColor = '#f0f0f0';
-                tickColor = 'rgba(0, 0, 0, 0.75)';
 
-                const barChart = document.getElementById('barChart');
-                const barChartVar = new Chart(barChart, {
-                    type: 'bar',
-                    data: {
-                        labels: [
-                            '1 Jan',
-                            '2 Jan',
-                            '3 Jan',
-                            '4 Jan',
-                            '5 Jan',
-                            '6 Jan',
-                            '7 Jan',
-                            '8 Jan',
-                            '9 Jan',
-                            '10 Jan',
-                            '11 Jan',
-                            '12 Jan',
-                            '13 Jan',
-                            '14 Jan',
-                            '15 Jan',
-                            '16 Jan',
-                            '17 Jan',
-                            '18 Jan',
-                            '19 Jan',
-                            '20 Jan',
-                            '21 Jan',
-                            '22 Jan',
-                            '23 Jan',
-                            '24 Jan',
-                            '25 Jan',
-                            '26 Jan',
-                            '27 Jan',
-                            '28 Jan',
-                            '29 Jan',
-                            '30 Jan',
-                        ],
-                        datasets: [{
-                            data: [275, 90, 190, 205, 125, 85, 55, 87, 127, 150, 230, 280, 190, 10, 10,
-                                10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10
-                            ],
-                            backgroundColor: cyanColor,
-                            borderColor: 'transparent',
-                            maxBarThickness: 15,
-                            borderRadius: {
-                                topRight: 15,
-                                topLeft: 15
-                            }
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: {
-                            duration: 500
-                        },
-                        plugins: {
-                            tooltip: {
-                                rtl: false,
-                                backgroundColor: config.colors.white,
-                                titleColor: config.colors.black,
-                                bodyColor: config.colors.black,
-                                borderWidth: 1,
-                                borderColor: borderColor
-                            },
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: {
-                                    color: gridColor,
-                                    borderColor: borderColor
-                                },
-                                ticks: {
-                                    color: tickColor
-                                }
-                            },
-                            y: {
-                                grid: {
-                                    color: gridColor,
-                                    borderColor: borderColor
-                                },
-                                ticks: {
-                                    stepSize: 100,
-                                    tickColor: gridColor,
-                                    color: tickColor
-                                }
-                            }
-                        }
-                    }
-                });
             }
         });
     </script>
