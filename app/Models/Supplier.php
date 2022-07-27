@@ -78,6 +78,6 @@ class Supplier extends Model
             }
         }
 
-        return ceil($setrentang / $n);
+        return (ceil($setrentang / $n) <= 0) ? 1 : ceil($setrentang / $n);
     }
 }

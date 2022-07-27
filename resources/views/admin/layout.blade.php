@@ -156,8 +156,8 @@
                             <div data-i18n="Misc">Analisis Penjualan</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class="menu-item">
-                                <a href="pages-misc-error.html" class="menu-link">
+                            <li class="menu-item" id="grafik-penjualan">
+                                <a href="{{ url('admin/analisis-penjualan/grafik-penjualan') }}" class="menu-link">
                                     <div data-i18n="Error">Grafik Penjualan</div>
                                 </a>
                             </li>
@@ -328,6 +328,7 @@
     <script src="{{ asset('assets/vendor/libs/datatables/datatables.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/select2/js/select2.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/chartjs/chartjs.js') }}"></script>
 
     <!-- Main JS -->
     <script src="{{ asset('assets/js/main.js') }}"></script>

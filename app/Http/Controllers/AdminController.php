@@ -117,4 +117,15 @@ class AdminController extends Controller
             })->rawColumns(['action'])->toJson();
         }
     }
+
+    public function config(Request $request)
+    {
+        if ($request->req == 'getGrafik')
+        {
+            if ($request->priode == 'minnguan')
+            {
+                dd($request->waktu);
+            }
+        }
+    }
 }
