@@ -109,7 +109,7 @@
                         gridColor = '#f0f0f0';
                         tickColor = 'rgba(0, 0, 0, 0.75)';
 
-                        var chartExist = Chart.getChart("barChart"); // <canvas> id
+                        var chartExist = Chart.getChart("barChart");
                         if (chartExist != undefined)
                             chartExist.destroy();
 
@@ -173,8 +173,6 @@
                         });
                     }
                 });
-
-
             }
         });
     </script>

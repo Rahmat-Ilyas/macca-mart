@@ -164,16 +164,105 @@ class AdminController extends Controller
                     $data[] = count($getitemklr);
                 }
                 $title = 'Tahun ' . $request->waktu;
-
             }
+
+            $result = [
+                'title' => $title,
+                'label' => $label,
+                'data' => $data
+            ];
+
+            return response()->json($result, 200);
+        } else if ($request->req == 'getProdukLaku') {
+            $data = [];
+            if ($request->priode == 'harian') {
+                $produk = DB::table('tbl_ikdt')->select('kodeitem')->distinct('kodeitem')->whereDate('dateupd', $request->waktu)->get();
+                foreach ($produk as $i => $dta) {
+                    $get_jum = DB::table('tbl_ikdt')->select('kodeitem', 'jumlah', 'total')->where('kodeitem', $dta->kodeitem)->whereDate('dateupd', $request->waktu)->get();
+                    $jumlah = 0;
+                    $total = 0;
+                    foreach ($get_jum as $jum) {
+                        $j = explode('.', $jum->jumlah);
+                        $t = explode('.', $jum->total);
+                        $jumlah += $j[0];
+                        $total += $t[0];
+                    }
+                    $nama = Barang::where('kodeitem', $dta->kodeitem)->first()->namaitem;
+                    $data[$i]['kodeitem'] = $dta->kodeitem;
+                    $data[$i]['nama'] = $nama;
+                    $data[$i]['jumlah'] = $jumlah;
+                    $data[$i]['total'] = 'Rp.' . number_format($total);
+                }
+                $title = 'Tanggal ' . date('d F Y', strtotime($request->waktu));
+            } else if ($request->priode == 'bulanan') {
+                $waktu = explode('-', $request->waktu);
+                $produk = DB::table('tbl_ikdt')->select('kodeitem')->distinct('kodeitem')->whereMonth('dateupd', $waktu[1])->whereYear('dateupd', $waktu[0])->get();
+                foreach ($produk as $i => $dta) {
+                    $get_jum = DB::table('tbl_ikdt')->select('kodeitem', 'jumlah', 'total')->where('kodeitem', $dta->kodeitem)->whereMonth('dateupd', $waktu[1])->whereYear('dateupd', $waktu[0])->get();
+                    $jumlah = 0;
+                    $total = 0;
+                    foreach ($get_jum as $jum) {
+                        $j = explode('.', $jum->jumlah);
+                        $t = explode('.', $jum->total);
+                        $jumlah += $j[0];
+                        $total += $t[0];
+                    }
+                    $nama = Barang::where('kodeitem', $dta->kodeitem)->first()->namaitem;
+                    $data[$i]['kodeitem'] = $dta->kodeitem;
+                    $data[$i]['nama'] = $nama;
+                    $data[$i]['jumlah'] = $jumlah;
+                    $data[$i]['total'] = 'Rp.' . number_format($total);
+                }
+                $title = 'Bulan ' . date('F', strtotime($request->waktu . '-1')) . ' ' . $waktu[0];
+            } else if ($request->priode == 'tahunan') {
+                $produk = DB::table('tbl_ikdt')->select('kodeitem')->distinct('kodeitem')->whereYear('dateupd', $request->waktu)->get();
+                foreach ($produk as $i => $dta) {
+                    $get_jum = DB::table('tbl_ikdt')->select('kodeitem', 'jumlah', 'total')->where('kodeitem', $dta->kodeitem)->whereYear('dateupd', $request->waktu)->get();
+                    $jumlah = 0;
+                    $total = 0;
+                    foreach ($get_jum as $jum) {
+                        $j = explode('.', $jum->jumlah);
+                        $t = explode('.', $jum->total);
+                        $jumlah += $j[0];
+                        $total += $t[0];
+                    }
+                    $nama = Barang::where('kodeitem', $dta->kodeitem)->first()->namaitem;
+                    $data[$i]['kodeitem'] = $dta->kodeitem;
+                    $data[$i]['nama'] = $nama;
+                    $data[$i]['jumlah'] = $jumlah;
+                    $data[$i]['total'] = 'Rp.' . number_format($total);
+                }
+                $title = 'Tahun ' . $request->waktu;
+            }
+
+
+            $jml = array_column($data, 'jumlah');
+            array_multisort($jml, SORT_DESC, $data);
+
+            $result = [];
+            $color = [];
+            $label = [];
+            $series = [];
+            $data_fix = [];
+            for ($i = 0; $i < 10; $i++) {
+                if (count($data) > 0) {
+                    $rand = str_pad(dechex(rand(0x000000, 0xffffff)), 6, 0, STR_PAD_LEFT);
+                    $color[] = "#" . $rand;
+                    $label[] = $data[$i]['nama'];
+                    $series[] = $data[$i]['jumlah'];
+                    $data_fix[] = $data[$i];
+                }
+            }
+
+            $result = [
+                "title" => $title,
+                "color" => $color,
+                "label" => $label,
+                "series" => $series,
+                "data" => $data_fix,
+            ];
+
+            return response()->json($result, 200);
         }
-
-        $result = [
-            'title' => $title,
-            'label' => $label,
-            'data' => $data
-        ];
-
-        return response()->json($result, 200);
     }
 }

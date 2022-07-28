@@ -161,8 +161,8 @@
                                     <div data-i18n="Error">Grafik Penjualan</div>
                                 </a>
                             </li>
-                            <li class="menu-item">
-                                <a href="pages-misc-under-maintenance.html" class="menu-link">
+                            <li class="menu-item" id="produk-paling-laku">
+                                <a href="{{ url('admin/analisis-penjualan/produk-paling-laku') }}" class="menu-link">
                                     <div data-i18n="Under Maintenance">Produk Paling Laku</div>
                                 </a>
                             </li>
@@ -171,11 +171,11 @@
                                     <div data-i18n="Under Maintenance">Kategori Paling Laku</div>
                                 </a>
                             </li>
-                            <li class="menu-item">
-                                <a href="pages-misc-under-maintenance.html" class="menu-link">
+                            {{-- <li class="menu-item" id="produk-kurang-laku">
+                                <a href="{{ url('admin/analisis-penjualan/produk-kurang-laku') }}" class="menu-link">
                                     <div data-i18n="Under Maintenance">Produk Kurang Laku</div>
                                 </a>
-                            </li>
+                            </li> --}}
                         </ul>
                     </li>
 
