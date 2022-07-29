@@ -15,32 +15,13 @@
             <div class="row">
                 <div class="col-md-8">
                     <div class="card-datatable table-responsive px-4 pb-4">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <label for="kategori">Lihat Berdasarkan Priode</label>
-                                <select name="kategori" id="priode" class="form-select">
-                                    <option value="harian">Harian</option>
-                                    <option value="bulanan">Bulanan</option>
-                                    <option value="tahunan">Tahunan</option>
-                                </select>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <label for="kategori">Pilih Priode Waktu</label>
-                                <input type="date" id="waktu" class="form-control" value="{{ date('Y-m-d') }}"">
-                            </div>
-                        </div>
-
-                        <hr>
-                        <h5 class="card-title mb-0 pl-0 pl-sm-2 p-2 mb-2">Top 10 Produk Kurang Laku per <span
-                                id="lab-waktu">Tanggal {{ date('d F Y') }}</span></h5>
+                        <h5 class="card-title mb-0 pl-0 pl-sm-2 p-2 mb-2">List 500 Produk Kurang Laku</h5>
                         <table class="table table-bordered dataBarang" style="font-size: 11px;">
                             <thead>
                                 <tr>
                                     <th>Kode Barang</th>
                                     <th>Nama Barang</th>
                                     <th>Total Penjualan</th>
-                                    <th>Total Harga</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -66,10 +47,10 @@
             $(".select2").select2();
 
             var dataTable = $('.dataBarang').DataTable({
-                bLengthChange: false,
-                searching: false,
-                bInfo: false,
-                bPaginate: false,
+                // bLengthChange: false,
+                // searching: false,
+                // bInfo: false,
+                // bPaginate: false,
                 processing: true,
                 serverSide: false,
                 aaSorting: []
@@ -81,34 +62,7 @@
                 "X-CSRF-TOKEN": "{{ csrf_token() }}"
             }
 
-            $('#priode').change(function(e) {
-                e.preventDefault();
-
-                var priode = $(this).val();
-                var waktu;
-                if (priode == 'harian') {
-                    waktu = "{{ date('Y-m-d') }}";
-                    $('#waktu').attr('type', 'date').val(waktu);
-                } else if (priode == 'bulanan') {
-                    waktu = "{{ date('Y-m') }}";
-                    $('#waktu').attr('type', 'month').val(waktu);
-                } else {
-                    waktu = "{{ date('Y') }}"
-                    $('#waktu').attr('type', 'number').val(waktu);
-                }
-
-                getData(priode, waktu);
-            });
-
-            $(document).on('change keyup', '#waktu', function(e) {
-                e.preventDefault();
-                var waktu = $(this).val();
-                var priode = $('#priode').val();
-
-                getData(priode, waktu);
-            });
-
-            getData('harian', "{{ date('Y-m-d') }}");
+            getData();
 
             const donutChartEl = document.querySelector('#donutChart');
             const donutChartConfig = {
@@ -170,7 +124,7 @@
             const donutChart = new ApexCharts(donutChartEl, donutChartConfig);
             donutChart.render();
 
-            function getData(priode, waktu) {
+            function getData() {
                 $.ajax({
                     url: url,
                     method: "POST",
@@ -180,8 +134,7 @@
                     data: {
                         req: 'getProdukLaku',
                         get: 'krLaku',
-                        priode: priode,
-                        waktu: waktu,
+                        priode: 'all',
                     },
                     success: function(res) {
                         $('#lab-waktu').text(res.title);
@@ -192,7 +145,6 @@
                                     val.kodeitem,
                                     val.nama,
                                     val.jumlah + ' Item',
-                                    val.total,
                                 ]).draw(false);
                             });
                             donutChart.updateOptions({

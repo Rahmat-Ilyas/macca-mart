@@ -166,16 +166,17 @@
                                     <div data-i18n="Under Maintenance">Produk Paling Laku</div>
                                 </a>
                             </li>
-                            <li class="menu-item">
-                                <a href="pages-misc-under-maintenance.html" class="menu-link">
+                            <li class="menu-item" id="kategori-paling-laku">
+                                <a href="{{ url('admin/analisis-penjualan/kategori-paling-laku') }}"
+                                    class="menu-link">
                                     <div data-i18n="Under Maintenance">Kategori Paling Laku</div>
                                 </a>
                             </li>
-                            {{-- <li class="menu-item" id="produk-kurang-laku">
+                            <li class="menu-item" id="produk-kurang-laku">
                                 <a href="{{ url('admin/analisis-penjualan/produk-kurang-laku') }}" class="menu-link">
                                     <div data-i18n="Under Maintenance">Produk Kurang Laku</div>
                                 </a>
-                            </li> --}}
+                            </li>
                         </ul>
                     </li>
 
@@ -193,14 +194,14 @@
                         </a>
                     </li>
 
-                    <li class="menu-header small text-uppercase"><span class="menu-header-text">Laporan</span></li>
+                    {{-- <li class="menu-header small text-uppercase"><span class="menu-header-text">Laporan</span></li>
 
                     <li class="menu-item">
                         <a href="cards-basic.html" class="menu-link">
                             <i class="menu-icon tf-icons bx bxs-report"></i>
                             <div data-i18n="Basic">Laporan</div>
                         </a>
-                    </li>
+                    </li> --}}
                 </ul>
             </aside>
             <!-- / Menu -->
@@ -253,8 +254,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                    <span
-                                                        class="fw-semibold d-block">{{ Auth::user()->nama }}</span>
+                                                    <span class="fw-semibold d-block">{{ Auth::user()->nama }}</span>
                                                     <small class="text-muted">Admin</small>
                                                 </div>
                                             </div>
@@ -335,11 +335,16 @@
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
-    
+    <script src="{{ asset('assets/js/ui-popover.js') }}"></script>
+
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+
     @yield('javascript')
-    
+
     <script>
-        $(document).ready(function() {            
+
+        $(document).ready(function() {
+            $('[data-toggle1="tooltip"]').tooltip()
             $('.datatable').DataTable();
         });
     </script>
