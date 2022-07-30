@@ -179,7 +179,6 @@
                     headers: headers,
                     data: {
                         req: 'getKategoriLaku',
-                        get: 'plLaku',
                         priode: priode,
                         waktu: waktu,
                     },
