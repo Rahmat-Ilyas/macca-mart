@@ -9,7 +9,7 @@ class BarangKeluar extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_item_ik';
+    protected $table = 'tbl_ikhd';
     public $timestamps = false;
     protected $guarded = [];
 

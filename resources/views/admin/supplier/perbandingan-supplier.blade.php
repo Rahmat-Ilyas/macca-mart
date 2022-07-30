@@ -62,11 +62,6 @@
             function getData() {
                 $(".dataBarang").dataTable().fnDestroy();
                 $('.dataBarang').DataTable({
-                    bLengthChange: true,
-                    bFilter: true,
-                    bInfo: true,
-                    bAutoWidth: true,
-                    // searching: true,
                     processing: true,
                     serverSide: true,
                     ajax: {
@@ -79,11 +74,6 @@
                         async: true,
                         error: function(res) {},
                     },
-                    deferRender: true,
-                    responsive: !0,
-                    colReorder: !0,
-                    pagingType: "full_numbers",
-                    stateSave: !1,
                     language: {
                         zeroRecords: "Belum ada data...",
                         processing: 'Mengambil Data...',

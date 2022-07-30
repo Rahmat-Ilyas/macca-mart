@@ -6,51 +6,42 @@
     @endphp
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Data Barang /</span> Barang Masuk</h4>
+        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Analisis /</span> Data Transaksi</h4>
 
         <!-- Basic Bootstrap Table -->
         <div class="card">
-            <h5 class="card-header pb-3">Data Barang Masuk</h5>
+            <h5 class="card-header pb-3">Data Transaksi</h5>
             <hr>
             <div class="card-datatable table-responsive px-4 pb-4">
                 <div class="row">
-                    <div class="col-sm-2">
-                        <label for="lokasi">Lokasi</label>
-                        <select id="lokasi" class="form-select">
-                            <option value="ALL">Semua</option>
-                            <option value="GDN">GUDANG</option>
-                            <option value="UTM">UTAMA</option>
-                        </select>
-                    </div>
                     <div class="col-sm-3">
                         <label for="kategori">Lihat Berdasarkan Priode</label>
                         <select name="kategori" id="priode" class="form-select">
                             <option value="harian">Harian</option>
-                            <option value="bulanan">Bulanan</option>
-                            <option value="tahunan" selected="">Tahunan</option>
+                            <option value="bulanan" selected="">Bulanan</option>
+                            <option value="tahunan">Tahunan</option>
                         </select>
                     </div>
 
                     <div class="col-sm-3">
                         <label for="kategori">Pilih Priode Waktu</label>
-                        <input type="text" id="waktu" class="form-control" value="{{ date('Y') }}"">
+                        <input type="month" id="waktu" class="form-control" value="{{ date('Y-m') }}"">
                     </div>
                 </div>
 
                 <hr>
-                <h5 class="card-title mb-0 pl-0 pl-sm-2 p-2 mb-2">Data Barang Masuk per <span id="lab-waktu">Tahun
-                        {{ date('Y') }}</span></h5>
+                <h5 class="card-title mb-0 pl-0 pl-sm-2 p-2 mb-2">Data Transaksi per <span id="lab-waktu">Bulan
+                        {{ date('F Y') }}</span></h5>
                 <table class="table table-striped dataBarang" style="font-size: 12px;">
                     <thead>
                         <tr>
-                            {{-- <th width="10">No</th> --}}
                             <th>Nomor Transaksi</th>
-                            <th>Tggl Masuk</th>
-                            <th>Kantor</th>
-                            <th>Nama Supplier</th>
+                            <th>Tggl Transaksi</th>
                             <th>Jumlah Item</th>
                             <th>Total Item</th>
                             <th>Total Harga</th>
+                            <th>Jumlah Bayar</th>
+                            <th>Kasir</th>
                             <th>Detail</th>
                         </tr>
                     </thead>
@@ -83,36 +74,36 @@
 
                                         <td></td>
 
-                                        <td width="200"><b>Jumlah Item</b></td>
+                                        <td width="200"><b>Total Harga</b></td>
                                         <td width="10">:</td>
-                                        <td id="jum_barang">-</td>
+                                        <td id="totalakhir">-</td>
                                     </tr>
                                     <tr>
-                                        <td><b>Tanggal Masuk</b></td>
+                                        <td><b>Tanggal Transaksi</b></td>
                                         <td>:</td>
                                         <td id="tanggal">-</td>
 
                                         <td></td>
 
-                                        <td><b>Total Item</b></td>
+                                        <td><b>Jumlah Bayar</b></td>
                                         <td>:</td>
-                                        <td id="totalitem">-</td>
+                                        <td id="jmltunai">-</td>
                                     </tr>
                                     <tr>
-                                        <td><b>Kantor</b></td>
+                                        <td><b>Jumlah Item</b></td>
                                         <td>:</td>
-                                        <td id="kantor">-</td>
+                                        <td id="jum_barang">-</td>
 
                                         <td></td>
 
-                                        <td><b>Total Harga</b></td>
+                                        <td><b>Kasir</b></td>
                                         <td>:</td>
-                                        <td id="subtotal">-</td>
+                                        <td id="user1">-</td>
                                     </tr>
                                     <tr>
-                                        <td><b>Supplier</b></td>
+                                        <td><b>Total Item</b></td>
                                         <td>:</td>
-                                        <td id="nama_supplier">-</td>
+                                        <td id="totalitem">-</td>
 
                                         <td></td>
 
@@ -124,7 +115,7 @@
                             </table>
                         </div>
                         <div class="col-12">
-                            <h4 class="text-center mt-3">List Barang Masuk</h4>
+                            <h4 class="text-center mt-3">List Barang Terjual</h4>
                             <hr>
                             <table class="table table-striped detailBarang" style="font-size: 11px;">
                                 <thead>
@@ -158,7 +149,7 @@
 @section('javascript')
     <script>
         $(document).ready(function() {
-            $('#barang-masuk').addClass('active').parents('.this-sub').addClass('active open');
+            $('#data-transaksi').addClass('active').parents('.this-sub').addClass('active open');
             $(".select2").select2();
 
             var url = "{{ url('admin/config') }}";
@@ -182,7 +173,7 @@
                     cache: false,
                     headers: headers,
                     data: {
-                        req: 'getDetailBrMasuk',
+                        req: 'getDetailBrKeluar',
                         id: id
                     },
                     success: function(res) {
@@ -211,7 +202,6 @@
                 e.preventDefault();
 
                 var priode = $(this).val();
-                var lokasi = $('#lokasi').val();
                 var waktu;
                 if (priode == 'harian') {
                     waktu = "{{ date('Y-m-d') }}";
@@ -224,32 +214,21 @@
                     $('#waktu').attr('type', 'number').val(waktu);
                 }
 
-                getData(lokasi, priode, waktu);
+                getData(priode, waktu);
             });
 
             $(document).on('change keyup', '#waktu', function(e) {
                 e.preventDefault();
                 var waktu = $(this).val();
                 var priode = $('#priode').val();
-                var lokasi = $('#lokasi').val();
 
-                getData(lokasi, priode, waktu);
+                getData(priode, waktu);
             });
 
-            $('#lokasi').change(function(e) {
-                e.preventDefault();
+            getData('bulanan', "{{ date('Y-m') }}");
 
-                var lokasi = $(this).val();
-                var priode = $('#priode').val();
-                var waktu = $('#waktu').val();
-
-                getData(lokasi, priode, waktu);
-            });
-
-            getData('ALL', 'tahunan', "{{ date('Y') }}");
-
-            function getData(lokasi, priode, waktu) {
-                getTitle(lokasi, priode, waktu);
+            function getData(priode, waktu) {
+                getTitle(priode, waktu);
                 $(".dataBarang").dataTable().fnDestroy();
                 $('.dataBarang').DataTable({
                     // pageLength: 50,
@@ -260,8 +239,7 @@
                         method: "POST",
                         headers: headers,
                         data: {
-                            req: 'getBarangMasuk',
-                            lokasi: lokasi,
+                            req: 'getDataTransaksi',
                             priode: priode,
                             waktu: waktu,
                         },
@@ -275,12 +253,6 @@
                         processing: 'Mengambil Data...',
                     },
                     columns: [
-                        // {
-                        //     data: 'no',
-                        //     render: function(data, type, row, meta) {
-                        //         return meta.row + 1;
-                        //     }
-                        // },
                         {
                             data: 'notransaksi',
                             name: 'notransaksi',
@@ -288,14 +260,6 @@
                         {
                             data: 'tanggal',
                             name: 'tanggal'
-                        },
-                        {
-                            data: 'kodekantor',
-                            name: 'kodekantor'
-                        },
-                        {
-                            data: 'supplier',
-                            name: 'supplier'
                         },
                         {
                             data: 'jum_barang',
@@ -306,8 +270,16 @@
                             name: 'totalitem'
                         },
                         {
-                            data: 'subtotal',
-                            name: 'subtotal'
+                            data: 'totalakhir',
+                            name: 'totalakhir'
+                        },
+                        {
+                            data: 'jmltunai',
+                            name: 'jmltunai'
+                        },
+                        {
+                            data: 'user1',
+                            name: 'user1'
                         },
                         {
                             data: 'action',
@@ -319,7 +291,7 @@
                 });
             }
 
-            function getTitle(lokasi, priode, waktu) {
+            function getTitle(priode, waktu) {
                 $.ajax({
                     url: url,
                     method: "POST",
@@ -330,7 +302,6 @@
                         req: 'getTitle',
                         priode: priode,
                         waktu: waktu,
-                        lokasi: lokasi
                     },
                     success: function(res) {
                         $('#lab-waktu').text(res);

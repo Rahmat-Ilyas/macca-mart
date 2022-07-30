@@ -180,8 +180,8 @@
                         </ul>
                     </li>
 
-                    <li class="menu-item">
-                        <a href="cards-basic.html" class="menu-link">
+                    <li class="menu-item" id="data-transaksi">
+                        <a href="{{ url('admin/data-transaksi') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-barcode"></i>
                             <div data-i18n="Basic">Data Transaksi</div>
                         </a>

@@ -31,8 +31,8 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <h4 class="text-center mt-4">Produk Kurang Laku</h4>
-                    <div id="donutChart" class="mb-5"></div>
+                    {{-- <h4 class="text-center mt-4">Produk Kurang Laku</h4>
+                    <div id="donutChart" class="mb-5"></div> --}}
                 </div>
             </div>
         </div>

@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Yajra\DataTables\Facades\DataTables as DataTables;
+use Yajra\DataTables\DataTables;
 
 use App\Models\Barang;
+use App\Models\BarangKeluar;
 use App\Models\BarangMasuk;
 use App\Models\Kategori;
 use App\Models\Supplier;
@@ -98,37 +99,62 @@ class AdminController extends Controller
             })->toJson();
         } else if ($request->req == 'getBarangMasuk') {
             if ($request->lokasi == 'ALL') {
-                $get_kantor = BarangMasuk::select('notransaksi', 'tanggal', 'kodekantor', 'kodesupel', 'totalitem', 'subtotal', 'tipe')->where('tipe', 'BL');
+                $get_kantor = DB::table('tbl_imhd')->select('notransaksi', 'tanggal', 'kodekantor', 'kodesupel', 'totalitem', 'subtotal', 'tipe')->where('tipe', 'BL');
             } else if ($request->lokasi == 'UTM') {
-                $get_kantor = BarangMasuk::select('notransaksi', 'tanggal', 'kodekantor', 'kodesupel', 'totalitem', 'subtotal', 'tipe')->where('tipe', 'BL')->where('kodekantor', 'UTM');
+                $get_kantor = DB::table('tbl_imhd')->select('notransaksi', 'tanggal', 'kodekantor', 'kodesupel', 'totalitem', 'subtotal', 'tipe')->where('tipe', 'BL')->where('kodekantor', 'UTM');
             } else {
-                $get_kantor = BarangMasuk::select('notransaksi', 'tanggal', 'kodekantor', 'kodesupel', 'totalitem', 'subtotal', 'tipe')->where('tipe', 'BL')->where('kodekantor', 'GDN');
+                $get_kantor = DB::table('tbl_imhd')->select('notransaksi', 'tanggal', 'kodekantor', 'kodesupel', 'totalitem', 'subtotal', 'tipe')->where('tipe', 'BL')->where('kodekantor', 'GDN');
             }
 
             if ($request->priode == 'harian') {
                 $result = $get_kantor->whereDate('tanggal', $request->waktu)->get();
-                $title = 'Tanggal ' . date('d F Y', strtotime($request->waktu));
             } else if ($request->priode == 'bulanan') {
                 $waktu = explode('-', $request->waktu);
                 $result = $get_kantor->whereMonth('tanggal', $waktu[1])->whereYear('tanggal', $waktu[0])->get();
-                $title = 'Bulan ' . date('F', strtotime($request->waktu . '-1')) . ' ' . $waktu[0];
             } else if ($request->priode == 'tahunan') {
                 $result = $get_kantor->whereYear('tanggal', $request->waktu)->get();
-                $title = 'Tahun ' . $request->waktu;
             }
 
             return DataTables::of($result)->addColumn('supplier', function ($dta) {
-                return $dta->supplier ? $dta->supplier->nama : '-';
+                $supplier = DB::table('tbl_supel')->select('nama', 'kode')->where('kode', $dta->kodesupel)->first();
+                return $supplier ? $supplier->nama : '-';
             })->addColumn('tanggal', function ($dta) {
                 return date('d/m/Y H:i', strtotime($dta->tanggal));
             })->addColumn('jum_barang', function ($dta) {
-                return count($dta->detail_barang);
+                $jumlh = DB::table('tbl_imdt')->select('notransaksi')->where('notransaksi', $dta->notransaksi)->get();
+                return count($jumlh) . ' Item';
             })->addColumn('totalitem', function ($dta) {
-                $get = explode('.', $dta->totalitem);
-                return number_format($get[0]);
+                return round($dta->totalitem) . ' Item';
             })->addColumn('subtotal', function ($dta) {
-                $get = explode('.', $dta->subtotal);
-                return number_format($get[0]) . ',00';
+                return 'Rp.' . number_format(round($dta->subtotal)) . ',00';
+            })->addColumn('action', function ($dta) {
+                return '<div class="text-center">
+				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-bs-toggle="modal" data-bs-target=".modal-detail" data-id="' . $dta->notransaksi . '"><i class="bx bx-detail"></i></button>
+				</div>';
+            })->rawColumns(['action'])->toJson();
+        } else if ($request->req == 'getDataTransaksi') {
+            $barang = DB::table('tbl_ikhd')->select('notransaksi', 'tanggal', 'tipe', 'totalitem', 'totalakhir', 'jmltunai', 'user1')->where('tipe', 'KSR');
+
+            if ($request->priode == 'harian') {
+                $result = $barang->whereDate('tanggal', $request->waktu)->get();
+            } else if ($request->priode == 'bulanan') {
+                $waktu = explode('-', $request->waktu);
+                $result = $barang->whereMonth('tanggal', $waktu[1])->whereYear('tanggal', $waktu[0])->get();
+            } else if ($request->priode == 'tahunan') {
+                $result = $barang->whereYear('tanggal', $request->waktu)->get();
+            }
+
+            return DataTables::of($result)->addColumn('tanggal', function ($dta) {
+                return date('d/m/Y H:i', strtotime($dta->tanggal));
+            })->addColumn('jum_barang', function ($dta) {
+                $jumlh = DB::table('tbl_ikdt')->select('notransaksi')->where('notransaksi', $dta->notransaksi)->get();
+                return count($jumlh) . ' Item';
+            })->addColumn('totalitem', function ($dta) {
+                return round($dta->totalitem) . ' Item';
+            })->addColumn('totalakhir', function ($dta) {
+                return 'Rp.' . number_format(round($dta->totalakhir)) . ',00';
+            })->addColumn('jmltunai', function ($dta) {
+                return 'Rp.' . number_format(round($dta->jmltunai)) . ',00';
             })->addColumn('action', function ($dta) {
                 return '<div class="text-center">
 				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-bs-toggle="modal" data-bs-target=".modal-detail" data-id="' . $dta->notransaksi . '"><i class="bx bx-detail"></i></button>
@@ -387,6 +413,57 @@ class AdminController extends Controller
                 "series" => $series,
                 "data" => $data_fix,
             ];
+
+            return response()->json($result, 200);
+        } else if ($request->req == 'getDetailBrMasuk') {
+            $result = BarangMasuk::select('notransaksi', 'tanggal', 'kodesupel', 'kodekantor', 'totalitem', 'subtotal')->where('notransaksi', $request->id)->first();
+
+            $result['tanggal'] = date('d/m/Y H:i', strtotime($result->tanggal));
+            $result['kantor'] = ($result->kodekantor == 'GDN') ? 'GUDANG' : 'UTAMA';
+            $result['nama_supplier'] = $result->supplier ? $result->supplier->nama : '-';
+            $result['jum_barang'] = count($result->detail_barang) . ' Item';
+            $result['totalitem'] = round($result->totalitem) . ' Item';
+            $result['subtotal'] = 'Rp.' . number_format(round($result->subtotal));
+
+            $dt_barang = [];
+            foreach ($result->detail_barang as $dta) {
+                $brg = Barang::select('namaitem', 'jenis')->where('kodeitem', $dta->kodeitem)->first();
+                $dt_barang[] = [
+                    "kodeitem" => $dta->kodeitem,
+                    "namaitem" => $brg->namaitem,
+                    "jenis" => $brg->jenis,
+                    "jumlah" => round($dta->jumlah),
+                    "satuan" => $dta->satuan,
+                    "harga" => 'Rp.' . number_format(round($dta->harga)),
+                    "total" => 'Rp.' . number_format(round($dta->total))
+                ];
+            }
+            $result['dt_barang'] = $dt_barang;
+
+            return response()->json($result, 200);
+        } else if ($request->req == 'getDetailBrKeluar') {
+            $result = BarangKeluar::select('notransaksi', 'tanggal', 'tipe', 'totalitem', 'totalakhir', 'jmltunai', 'user1')->where('notransaksi', $request->id)->first();
+
+            $result['tanggal'] = date('d/m/Y H:i', strtotime($result->tanggal));
+            $result['jum_barang'] = count($result->detail_barang) . ' Item';
+            $result['totalitem'] = round($result->totalitem) . ' Item';
+            $result['totalakhir'] = 'Rp.' . number_format(round($result->totalakhir));
+            $result['jmltunai'] = 'Rp.' . number_format(round($result->jmltunai));
+
+            $dt_barang = [];
+            foreach ($result->detail_barang as $dta) {
+                $brg = Barang::select('namaitem', 'jenis')->where('kodeitem', $dta->kodeitem)->first();
+                $dt_barang[] = [
+                    "kodeitem" => $dta->kodeitem,
+                    "namaitem" => $brg->namaitem,
+                    "jenis" => $brg->jenis,
+                    "jumlah" => round($dta->jumlah),
+                    "satuan" => $dta->satuan,
+                    "harga" => 'Rp.' . number_format(round($dta->harga)),
+                    "total" => 'Rp.' . number_format(round($dta->total))
+                ];
+            }
+            $result['dt_barang'] = $dt_barang;
 
             return response()->json($result, 200);
         } else if ($request->req == 'getTitle') {
