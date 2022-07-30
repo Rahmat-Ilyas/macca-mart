@@ -18,20 +18,20 @@
                         <label for="kategori">Lihat Berdasarkan Priode</label>
                         <select name="kategori" id="priode" class="form-select">
                             <option value="harian">Harian</option>
-                            <option value="bulanan" selected="">Bulanan</option>
+                            <option value="bulanan">Bulanan</option>
                             <option value="tahunan">Tahunan</option>
                         </select>
                     </div>
 
                     <div class="col-sm-3">
                         <label for="kategori">Pilih Priode Waktu</label>
-                        <input type="month" id="waktu" class="form-control" value="{{ date('Y-m') }}"">
+                        <input type="date" id="waktu" class="form-control" value="{{ date('Y-m-d') }}"">
                     </div>
                 </div>
 
                 <hr>
-                <h5 class="card-title mb-0 pl-0 pl-sm-2 p-2 mb-2">Data Transaksi per <span id="lab-waktu">Bulan
-                        {{ date('F Y') }}</span></h5>
+                <h5 class="card-title mb-0 pl-0 pl-sm-2 p-2 mb-2">Data Transaksi per <span id="lab-waktu">Tanggal
+                        {{ date('Y-m-d') }}</span></h5>
                 <table class="table table-striped dataBarang" style="font-size: 12px;">
                     <thead>
                         <tr>
@@ -225,7 +225,7 @@
                 getData(priode, waktu);
             });
 
-            getData('bulanan', "{{ date('Y-m') }}");
+            getData('harian', "{{ date('Y-m-d') }}");
 
             function getData(priode, waktu) {
                 getTitle(priode, waktu);
