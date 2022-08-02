@@ -207,9 +207,13 @@ class AdminController extends Controller
                 return round($dta->total_stok) . ' ' . $dta->satuan;
             })->addColumn('stokmin', function ($dta) {
                 return round($dta->stokmin) . ' ' . $dta->satuan;
+            })->addColumn('rf_tggl_pesanan', function ($dta) {
+                return '14/08/2022';
+            })->addColumn('fr_stok_pesanan', function ($dta) {
+                return '200 PCS';
             })->addColumn('action', function ($dta) {
                 return '<div class="text-center">
-				<button type="button" class="btn btn-secondary btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->kodeitem . '"><i class="bx bx-detail"></i></button>
+				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Buat Peramalan Lanjutan" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->kodeitem . '"><i class="bx bx-analyse"></i></button>
 				</div>';
             })->rawColumns(['action'])->toJson();
         }

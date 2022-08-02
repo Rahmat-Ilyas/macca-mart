@@ -25,18 +25,20 @@
                     </div>
                 </div>
                 <hr>
-                <table class="table table-striped dataBarang" style="font-size: 12px;">
-                    <thead>
+                <table class="table table-bordered dataBarang" style="font-size: 12px;">
+                    <thead class="table-secondary">
                         <tr>
-                            {{-- <th width="10">No</th> --}}
-                            <th>Kode Barang</th>
-                            <th>Nama Barang</th>
-                            <th>Stok (GDN/UTM)</th>
-                            <th>Min Stok</th>
-                            <th>Stok</th>
-                            <th>Perkiraan Pesanan Selanjutnya</th>
-                            <th>Perkiraan Jumlah Pesanan</th>
-                            {{-- <th>Action</th> --}}
+                            <th rowspan="2">Kode Barang</th>
+                            <th rowspan="2">Nama Barang</th>
+                            <th rowspan="2">Stok (GDN/UTM)</th>
+                            <th rowspan="2">Min Stok</th>
+                            <th rowspan="2">Sisa Stok</th>
+                            <th colspan="2" class="text-center">Perkiraan (Forecasting)</th>
+                            <th rowspan="2">Action</th>
+                        </tr>
+                        <tr>
+                            <th>Tggl Pemesanan</th>
+                            <th>Jmlh Pesanan</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,6 +89,9 @@
                         },
                         async: true,
                         error: function(res) {},
+                        complete: function(res) {
+                            $('[data-toggle1="tooltip"]').tooltip();
+                        }
                     },
                     language: {
                         zeroRecords: "Belum ada data...",
@@ -114,19 +119,19 @@
                             name: 'total_stok'
                         },
                         {
-                            data: 'hargapokok',
-                            name: 'hargapokok'
+                            data: 'rf_tggl_pesanan',
+                            name: 'rf_tggl_pesanan'
                         },
                         {
-                            data: 'hargajual1',
-                            name: 'hargajual1'
+                            data: 'fr_stok_pesanan',
+                            name: 'fr_stok_pesanan'
                         },
-                        // {
-                        //     data: 'action',
-                        //     name: 'action',
-                        //     orderable: false,
-                        //     searchable: false
-                        // },
+                        {
+                            data: 'action',
+                            name: 'action',
+                            orderable: false,
+                            searchable: false
+                        },
                     ]
                 });
             }
