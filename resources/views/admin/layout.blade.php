@@ -96,14 +96,19 @@
                         </a>
 
                         <ul class="menu-sub">
-                            <li class="menu-item">
-                                <a href="layouts-without-menu.html" class="menu-link">
+                            <li class="menu-item" id="forecasting-barang">
+                                <a href="{{ url('admin/forecasting/forecasting-barang') }}" class="menu-link">
                                     <div data-i18n="Without menu">Forecasting Barang</div>
                                 </a>
                             </li>
-                            <li class="menu-item">
-                                <a href="layouts-without-navbar.html" class="menu-link">
+                            <li class="menu-item" id="data-forecasting">
+                                <a href="{{ url('admin/forecasting/data-forecasting') }}" class="menu-link">
                                     <div data-i18n="Without navbar">Data Forecasting</div>
+                                </a>
+                            </li>
+                            <li class="menu-item" id="riwayat-forecasting">
+                                <a href="{{ url('admin/forecasting/riwayat-forecasting') }}" class="menu-link">
+                                    <div data-i18n="Without navbar">Riwayat Forecasting</div>
                                 </a>
                             </li>
                         </ul>
@@ -187,8 +192,8 @@
                         </a>
                     </li>
 
-                    <li class="menu-item">
-                        <a href="cards-basic.html" class="menu-link">
+                    <li class="menu-item" id="keuangan">
+                        <a href="{{ url('admin/keuangan') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-wallet"></i>
                             <div data-i18n="Basic">Keuangan</div>
                         </a>

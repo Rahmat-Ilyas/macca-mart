@@ -43,13 +43,11 @@ class AdminController extends Controller
     public  function datatable(Request $request)
     {
         if ($request->req == 'getBarang') {
-            $this->dept = $request->dept;
             if ($request->jenis == 'SEMUA') {
                 $result = Barang::select('*')->orderBy('jenis', 'desc');
             } else {
-                $result = Barang::select('*')->where('jenis', $request->jenis)->get();
+                $result = Barang::select('*')->where('jenis', $request->jenis);
             }
-
 
             return DataTables::of($result)->addColumn('no', function ($dta) {
                 return null;
@@ -82,11 +80,11 @@ class AdminController extends Controller
                 return $dta->jumitem($dta->jenis);
             })->toJson();
         } else if ($request->req == 'getSupplier') {
-            $result = Supplier::select('*')->where('tipe', 'SU')->get();
+            $result = Supplier::select('*')->where('tipe', 'SU');
 
             return DataTables::of($result)->toJson();
         } else if ($request->req == 'getPrbnSupplier') {
-            $result = Supplier::select('*')->where('tipe', 'SU')->get();
+            $result = Supplier::select('*')->where('tipe', 'SU');
 
             return DataTables::of($result)->addColumn('item_masuk', function ($dta) {
                 return $dta->item_masuk($dta->kode) . ' Item';
@@ -107,12 +105,12 @@ class AdminController extends Controller
             }
 
             if ($request->priode == 'harian') {
-                $result = $get_kantor->whereDate('tanggal', $request->waktu)->get();
+                $result = $get_kantor->whereDate('tanggal', $request->waktu);
             } else if ($request->priode == 'bulanan') {
                 $waktu = explode('-', $request->waktu);
-                $result = $get_kantor->whereMonth('tanggal', $waktu[1])->whereYear('tanggal', $waktu[0])->get();
+                $result = $get_kantor->whereMonth('tanggal', $waktu[1])->whereYear('tanggal', $waktu[0]);
             } else if ($request->priode == 'tahunan') {
-                $result = $get_kantor->whereYear('tanggal', $request->waktu)->get();
+                $result = $get_kantor->whereYear('tanggal', $request->waktu);
             }
 
             return DataTables::of($result)->addColumn('supplier', function ($dta) {
@@ -136,12 +134,12 @@ class AdminController extends Controller
             $barang = DB::table('tbl_ikhd')->select('notransaksi', 'tanggal', 'tipe', 'totalitem', 'totalakhir', 'jmltunai', 'user1')->where('tipe', 'KSR');
 
             if ($request->priode == 'harian') {
-                $result = $barang->whereDate('tanggal', $request->waktu)->get();
+                $result = $barang->whereDate('tanggal', $request->waktu);
             } else if ($request->priode == 'bulanan') {
                 $waktu = explode('-', $request->waktu);
-                $result = $barang->whereMonth('tanggal', $waktu[1])->whereYear('tanggal', $waktu[0])->get();
+                $result = $barang->whereMonth('tanggal', $waktu[1])->whereYear('tanggal', $waktu[0]);
             } else if ($request->priode == 'tahunan') {
-                $result = $barang->whereYear('tanggal', $request->waktu)->get();
+                $result = $barang->whereYear('tanggal', $request->waktu);
             }
 
             return DataTables::of($result)->addColumn('tanggal', function ($dta) {
@@ -158,6 +156,60 @@ class AdminController extends Controller
             })->addColumn('action', function ($dta) {
                 return '<div class="text-center">
 				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-bs-toggle="modal" data-bs-target=".modal-detail" data-id="' . $dta->notransaksi . '"><i class="bx bx-detail"></i></button>
+				</div>';
+            })->rawColumns(['action'])->toJson();
+        } else if ($request->req == 'getJurnal') {
+            $jurnal = DB::table('tbl_accjurnal')->select('*')->orderBy('tanggal', 'DESC')->orderBy('nourut', 'ASC');
+
+            if ($request->modul == 'BLI') {
+                $jurnal = $jurnal->where('modul', 'BLI');
+            } else if ($request->modul == 'JUA') {
+                $jurnal = $jurnal->where('modul', 'JUA');
+            } else {
+                $jurnal = $jurnal->where('modul', 'PRS');
+            }
+
+            if ($request->priode == 'harian') {
+                $result = $jurnal->whereDate('tanggal', $request->waktu);
+            } else if ($request->priode == 'bulanan') {
+                $waktu = explode('-', $request->waktu);
+                $result = $jurnal->whereMonth('tanggal', $waktu[1])->whereYear('tanggal', $waktu[0]);
+            } else if ($request->priode == 'tahunan') {
+                $result = $jurnal->whereYear('tanggal', $request->waktu);
+            }
+
+            return DataTables::of($result)->addColumn('tanggal', function ($dta) {
+                return date('d/m/Y H:i', strtotime($dta->tanggal));
+            })->addColumn('nama_akun', function ($dta) {
+                $akun = DB::table('tbl_perkiraan')->where('kodeacc', $dta->kodeacc)->first();
+                return $akun->namaacc;
+            })->addColumn('debet', function ($dta) {
+                return 'Rp.' . number_format($dta->debet, 2, ',', '.');
+            })->addColumn('kredit', function ($dta) {
+                return 'Rp.' . number_format($dta->kredit, 2, ',', '.');
+            })->toJson();
+        } else if ($request->req == 'getFrBarang') {
+            $result = DB::table('tbl_item')->join('tbl_itemstok', 'tbl_itemstok.kodeitem', '=', 'tbl_item.kodeitem')->selectRaw('tbl_item.*, SUM(tbl_itemstok.stok) as total_stok')->groupBy('tbl_item.kodeitem')->orderBy('total_stok', 'DESC');
+            if ($request->jenis != 'SEMUA') {
+                $result = $result->where('jenis', $request->jenis);
+            }
+
+            return DataTables::of($result)->addColumn('no', function ($dta) {
+                return null;
+            })->addColumn('stok_gu', function ($dta) {
+                $gdn = DB::table('tbl_itemstok')->where('kodeitem', $dta->kodeitem)->where('kantor', 'GDN')->first();
+                $gdn = $gdn ? round($gdn->stok) : '0';
+                $utm = DB::table('tbl_itemstok')->where('kodeitem', $dta->kodeitem)->where('kantor', 'UTM')->first();
+                $utm = $utm ? round($utm->stok) : '0';
+
+                return $gdn . ' / ' . $utm . ' (' . $dta->satuan . ')';
+            })->addColumn('total_stok', function ($dta) {
+                return round($dta->total_stok) . ' ' . $dta->satuan;
+            })->addColumn('stokmin', function ($dta) {
+                return round($dta->stokmin) . ' ' . $dta->satuan;
+            })->addColumn('action', function ($dta) {
+                return '<div class="text-center">
+				<button type="button" class="btn btn-secondary btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->kodeitem . '"><i class="bx bx-detail"></i></button>
 				</div>';
             })->rawColumns(['action'])->toJson();
         }
@@ -397,6 +449,12 @@ class AdminController extends Controller
             $lokasi = '';
             if ($request->lokasi == 'GDN') $lokasi = '(Gudang)';
             else if ($request->lokasi == 'UTM') $lokasi = '(Utama)';
+
+            if ($request->modul) {
+                if ($request->modul == 'BLI') $title = 'Pembelian per ' . $title;
+                else if ($request->modul == 'JUA') $title = 'Penjualan per ' . $title;
+                else if ($request->modul == 'PRS') $title = 'Persediaan per ' . $title;
+            }
 
             return $title . ' ' . $lokasi;
         }
