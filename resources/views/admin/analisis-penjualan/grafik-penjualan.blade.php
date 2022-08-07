@@ -1,8 +1,8 @@
 @extends('admin.layout')
 @section('content')
     @php
-    $data = new App\Models\Kategori();
-    $kategori = $data->orderBy('jenis', 'asc')->get();
+    $data = new App\Models\Barang();
+    $barang = $data->get();
     @endphp
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -14,9 +14,19 @@
             <hr>
             <div class="card-datatable table-responsive px-4 pb-4">
                 <div class="row">
+                    <div class="col-sm-4">
+                        <label for="barang">Lihat Berdasarkan Item</label>                        
+                        <select name="barang" id="barang" class="select2 form-select">
+                            <option value="ALL">LIHAT SEMUA ITEM</option>
+                            @foreach ($barang as $brg)
+                                <option value="{{ $brg->kodeitem }}">{{ $brg->namaitem }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="col-sm-3">
-                        <label for="kategori">Lihat Berdasarkan Priode</label>
-                        <select name="kategori" id="priode" class="form-select">
+                        <label for="priode">Lihat Berdasarkan Priode</label>
+                        <select name="priode" id="priode" class="form-select">
                             <option value="mingguan">Mingguan</option>
                             <option value="bulanan">Bulanan</option>
                             <option value="tahunan">Tahunan</option>
@@ -24,7 +34,7 @@
                     </div>
 
                     <div class="col-sm-3">
-                        <label for="kategori">Pilih Priode Waktu</label>
+                        <label for="waktu">Pilih Priode Waktu</label>
                         <input type="week" id="waktu" class="form-control"
                             value="{{ date('Y') . '-W' . date('W') }}"">
                     </div>
@@ -63,6 +73,7 @@
                 e.preventDefault();
 
                 var priode = $(this).val();
+                var barang = $('#barang').val();
                 var waktu;
                 if (priode == 'mingguan') {
                     waktu = "{{ date('Y') . '-W' . date('W') }}";
@@ -75,20 +86,31 @@
                     $('#waktu').attr('type', 'number').val(waktu);
                 }
 
-                getData(priode, waktu);
+                getData(barang, priode, waktu);
             });
 
             $(document).on('change keyup', '#waktu', function(e) {
                 e.preventDefault();
                 var waktu = $(this).val();
                 var priode = $('#priode').val();
+                var barang = $('#barang').val();
 
-                getData(priode, waktu);
+                getData(barang, priode, waktu);
             });
 
-            getData('mingguan', "{{ date('Y') . '-W' . date('W') }}");
+            $('#barang').change(function(e) {
+                e.preventDefault();
 
-            function getData(priode, waktu) {
+                var barang = $(this).val();
+                var priode = $('#priode').val();
+                var waktu = $('#waktu').val();
+
+                getData(barang, priode, waktu);
+            });
+
+            getData('ALL', 'mingguan', "{{ date('Y') . '-W' . date('W') }}");
+
+            function getData(barang, priode, waktu) {
                 const barChart = document.getElementById('barChart');
                 $.ajax({
                     url: url,
@@ -99,6 +121,7 @@
                         req: 'getGrafik',
                         priode: priode,
                         waktu: waktu,
+                        barang: barang,
                     },
                     success: function(data) {
                         $('#lab-waktu').text(data.title);

@@ -79,7 +79,7 @@
                     </li>
 
                     <li class="menu-item" id="sinkron">
-                        <a href="{{ url('admin/') }}" class="menu-link">
+                        <a href="{{ url('admin/riwayat-sinkron') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-sync"></i>
                             <div>Riwayat Sinkron</div>
                         </a>
@@ -104,11 +104,6 @@
                             <li class="menu-item" id="data-forecasting">
                                 <a href="{{ url('admin/forecasting/data-forecasting') }}" class="menu-link">
                                     <div data-i18n="Without navbar">Data Forecasting</div>
-                                </a>
-                            </li>
-                            <li class="menu-item" id="riwayat-forecasting">
-                                <a href="{{ url('admin/forecasting/riwayat-forecasting') }}" class="menu-link">
-                                    <div data-i18n="Without navbar">Riwayat Forecasting</div>
                                 </a>
                             </li>
                         </ul>

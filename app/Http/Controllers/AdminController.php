@@ -43,33 +43,27 @@ class AdminController extends Controller
     public  function datatable(Request $request)
     {
         if ($request->req == 'getBarang') {
-            if ($request->jenis == 'SEMUA') {
-                $result = Barang::select('*')->orderBy('jenis', 'desc');
-            } else {
-                $result = Barang::select('*')->where('jenis', $request->jenis);
+            $result = DB::table('tbl_item')->join('tbl_itemstok', 'tbl_itemstok.kodeitem', '=', 'tbl_item.kodeitem')->selectRaw('tbl_item.*, SUM(tbl_itemstok.stok) as total_stok')->groupBy('tbl_item.kodeitem')->orderBy('total_stok', 'DESC');
+            if ($request->jenis != 'SEMUA') {
+                $result = $result->where('jenis', $request->jenis);
             }
 
             return DataTables::of($result)->addColumn('no', function ($dta) {
                 return null;
             })->addColumn('hargapokok', function ($dta) {
-                $get = explode('.', $dta->hargapokok);
-                return number_format($get[0]) . ',00';
+                return number_format($dta->hargapokok, 2, ',', '.');
             })->addColumn('hargajual1', function ($dta) {
-                $get = explode('.', $dta->hargajual1);
-                return number_format($get[0]) . ',00';
-            })->addColumn('gdn', function ($dta) {
-                $get = $dta->stokitem($dta->kodeitem, 'GDN') ? $dta->stokitem($dta->kodeitem, 'GDN')->stok : 0;
-                $get = explode('.', $get);
-                return $get[0];
-            })->addColumn('utm', function ($dta) {
-                $get = $dta->stokitem($dta->kodeitem, 'UTM') ? $dta->stokitem($dta->kodeitem, 'UTM')->stok : 0;
-                $get = explode('.', $get);
-                return $get[0];
-            })->addColumn('action', function ($dta) {
-                return '<div class="text-center">
-				<button type="button" class="btn btn-secondary btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Detail" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->id . '"><i class="bx bx-detail"></i></button>
-				</div>';
-            })->rawColumns(['action'])->toJson();
+                return number_format($dta->hargajual1, 2, ',', '.');
+            })->addColumn('stok_gu', function ($dta) {
+                $gdn = DB::table('tbl_itemstok')->where('kodeitem', $dta->kodeitem)->where('kantor', 'GDN')->first();
+                $gdn = $gdn ? round($gdn->stok) : '0';
+                $utm = DB::table('tbl_itemstok')->where('kodeitem', $dta->kodeitem)->where('kantor', 'UTM')->first();
+                $utm = $utm ? round($utm->stok) : '0';
+
+                return $gdn . ' / ' . $utm . ' (' . $dta->satuan . ')';
+            })->addColumn('total_stok', function ($dta) {
+                return round($dta->total_stok) . ' ' . $dta->satuan;
+            })->toJson();
         } else if ($request->req == 'getKategori') {
             $this->dept = $request->dept;
             $result = Kategori::select('*');
@@ -208,9 +202,11 @@ class AdminController extends Controller
             })->addColumn('stokmin', function ($dta) {
                 return round($dta->stokmin) . ' ' . $dta->satuan;
             })->addColumn('rf_tggl_pesanan', function ($dta) {
-                return '14/08/2022';
+                $tggl = $this->forecasting_v1($dta->kodeitem, 0)['date_next'];
+                return date('d M Y', strtotime($tggl));
             })->addColumn('fr_stok_pesanan', function ($dta) {
-                return '200 PCS';
+                $item = $this->forecasting_v1($dta->kodeitem, 30)['order_next'];
+                return $item . ' PCS';
             })->addColumn('action', function ($dta) {
                 return '<div class="text-center">
 				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Buat Peramalan Lanjutan" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->kodeitem . '"><i class="bx bx-analyse"></i></button>
@@ -234,8 +230,14 @@ class AdminController extends Controller
                     $date = date('Y-m-d', strtotime('+' . $i . ' days', strtotime($df)));
                     $label[] = date('d M Y', strtotime($date));
 
-                    $getitemklr = DB::table('tbl_ikdt')->select('dateupd')->whereDate('dateupd', $date)->get();
-                    $data[] = count($getitemklr);
+                    if ($request->barang == 'ALL') $getdb = DB::table('tbl_ikdt');
+                    else $getdb = DB::table('tbl_ikdt')->where('kodeitem', $request->barang);
+                    $getitemklr = $getdb->select('dateupd', 'jumlah')->whereDate('dateupd', $date)->get();
+                    $jumlah = 0;
+                    foreach ($getitemklr as $jum) {
+                        $jumlah += round($jum->jumlah);
+                    }
+                    $data[] = $jumlah;
                 }
                 $title = 'Minggu ' . $waktu[1] . ', ' . $waktu[0];
             } else if ($request->priode == 'bulanan') {
@@ -247,8 +249,14 @@ class AdminController extends Controller
                     $date = $request->waktu . '-' . $i;
                     $label[] = date('d M', strtotime($date));
 
-                    $getitemklr = DB::table('tbl_ikdt')->select('dateupd')->whereDate('dateupd', $date)->get();
-                    $data[] = count($getitemklr);
+                    if ($request->barang == 'ALL') $getdb = DB::table('tbl_ikdt');
+                    else $getdb = DB::table('tbl_ikdt')->where('kodeitem', $request->barang);
+                    $getitemklr = $getdb->select('dateupd', 'jumlah')->whereDate('dateupd', $date)->get();
+                    $jumlah = 0;
+                    foreach ($getitemklr as $jum) {
+                        $jumlah += round($jum->jumlah);
+                    }
+                    $data[] = $jumlah;
                 }
                 $title = 'Bulan ' . date('F', strtotime($date)) . ' ' . $waktu[0];
             } else if ($request->priode == 'tahunan') {
@@ -258,8 +266,14 @@ class AdminController extends Controller
                     $date = $request->waktu . '-' . $i . '-1';
                     $label[] = date('F', strtotime($date));
 
-                    $getitemklr = DB::table('tbl_ikdt')->select('dateupd')->whereMonth('dateupd', $i)->whereYear('dateupd', $request->waktu)->get();
-                    $data[] = count($getitemklr);
+                    if ($request->barang == 'ALL') $getdb = DB::table('tbl_ikdt');
+                    else $getdb = DB::table('tbl_ikdt')->where('kodeitem', $request->barang);
+                    $getitemklr = $getdb->select('dateupd', 'jumlah')->whereMonth('dateupd', $i)->whereYear('dateupd', $request->waktu)->get();
+                    $jumlah = 0;
+                    foreach ($getitemklr as $jum) {
+                        $jumlah += round($jum->jumlah);
+                    }
+                    $data[] = $jumlah;
                 }
                 $title = 'Tahun ' . $request->waktu;
             }
@@ -462,5 +476,78 @@ class AdminController extends Controller
 
             return $title . ' ' . $lokasi;
         }
+    }
+
+    private function forecasting_v1($kodeitem, $waktu)
+    {
+        $gdn = DB::table('tbl_itemstok')->where('kodeitem', $kodeitem)->where('kantor', 'GDN')->first();
+        $gdn = $gdn ? round($gdn->stok) : 0;
+        $utm = DB::table('tbl_itemstok')->where('kodeitem', $kodeitem)->where('kantor', 'UTM')->first();
+        $utm = $utm ? round($utm->stok) : 0;
+        $barang = DB::table('tbl_item')->where('kodeitem', $kodeitem)->select('stokmin')->first();
+        $stok = $gdn + $utm;
+        $stokmin = round($barang->stokmin);
+
+        $date_now = '2022-06-04';
+        $date_first = date('Y-m-d', strtotime('-30 days', strtotime($date_now)));
+
+        // get jarak waktu
+        $frs = new DateTime($date_first);
+        $now = new DateTime($date_now);
+        $jarak = $now->diff($frs)->days;
+
+        $x = [];
+        $y = [];
+        $x2 = [];
+        $xy = [];
+        $date = $date_now;
+
+        for ($i = 1; $i <= $jarak; $i++) {
+            $date = date('Y-m-d', strtotime('+' . $i . ' days', strtotime($date_first)));
+
+            $get_jumlah = DB::table('tbl_ikdt')->join('tbl_ikhd', 'tbl_ikdt.notransaksi', '=', 'tbl_ikhd.notransaksi')->select('tbl_ikdt.jumlah')->where('tbl_ikhd.tipe', 'KSR')->where('tbl_ikdt.kodeitem', $kodeitem)->whereDate('tbl_ikhd.tanggal', $date)->get();
+
+            $X = $i + 1;
+            $Y = 0;
+            foreach ($get_jumlah as $dta) {
+                $Y += round($dta->jumlah);
+            }
+
+            $x[] = $X;
+            $y[] = $Y;
+            $x2[] = pow($X, 2);
+            $xy[] = $X * $Y;
+        }
+
+        $a = ((array_sum($y) * array_sum($x2)) - (array_sum($x) * array_sum($xy))) / ((count($x) * array_sum($x2)) - (pow(array_sum($x), 2)));
+        $b = ((count($x) * array_sum($xy)) - (array_sum($x) * array_sum($y))) / ((count($x) * array_sum($x2)) - (pow(array_sum($x), 2)));
+
+        $date_next = $date_now;
+        $x_next = 0;
+        $j = 1;
+        while ($stokmin <= $stok) {
+            $date_next = date('Y-m-d', strtotime('+' . $j . ' days', strtotime($date)));
+            $x_next = count($x) + $j;
+            $fr = $a + ($b * $x_next);
+            $fr = ($fr <= 0) ? 1 : $fr;
+            $stok = $stok - $fr;
+            $j++;
+        }
+
+        $order_next = 0;
+        $x_next2 = $x_next;
+        for ($l = 1; $l <= $waktu; $l++) {
+            $x_next2 = $x_next + $l;
+            $fr = $a + ($b * $x_next2);
+            $fr = ($fr <= 0) ? 1 : $fr;
+            $order_next += number_format($fr);
+        }
+
+        $data = [
+            "date_next" => $date_next,
+            "order_next" => $order_next
+        ];
+
+        return $data;
     }
 }

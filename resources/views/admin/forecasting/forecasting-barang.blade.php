@@ -37,8 +37,19 @@
                             <th rowspan="2">Action</th>
                         </tr>
                         <tr>
-                            <th>Tggl Pemesanan</th>
-                            <th>Jmlh Pesanan</th>
+                            <th class="text-center">
+                                <small>
+                                    Tggl Pemesanan <br>
+                                    Selanjutnya
+                                </small>
+                            </th>
+                            <th class="text-center">
+                                <small>
+                                    Jmlh Psn 1 Bln
+                                    <br>
+                                    Selanjutnya
+                                </small>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,8 +108,7 @@
                         zeroRecords: "Belum ada data...",
                         processing: 'Mengambil Data...',
                     },
-                    columns: [
-                        {
+                    columns: [{
                             data: 'kodeitem',
                             name: 'kodeitem',
                         },

@@ -31,9 +31,9 @@
                             {{-- <th width="10">No</th> --}}
                             <th>Kode Barang</th>
                             <th>Nama Barang</th>
-                            <th>Stok GDN</th>
-                            <th>Stok UTM</th>
-                            <th>Satuan</th>
+                            <th>Stok (GDN/UTM)</th>
+                            <th>Total Stok</th>
+                            {{-- <th>Satuan</th> --}}
                             <th>Rak</th>
                             <th>Kategori</th>
                             <th>Harga Pokok</th>
@@ -119,17 +119,17 @@
                             name: 'namaitem'
                         },
                         {
-                            data: 'gdn',
-                            name: 'gdn'
+                            data: 'stok_gu',
+                            name: 'stok_gu'
                         },
                         {
-                            data: 'utm',
-                            name: 'utm'
+                            data: 'total_stok',
+                            name: 'total_stok'
                         },
-                        {
-                            data: 'satuan',
-                            name: 'satuan'
-                        },
+                        // {
+                        //     data: 'satuan',
+                        //     name: 'satuan'
+                        // },
                         {
                             data: 'rak',
                             name: 'rak'
