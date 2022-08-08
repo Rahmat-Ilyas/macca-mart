@@ -226,10 +226,10 @@ class AdminController extends Controller
                 return date('d M Y', strtotime($tggl));
             })->addColumn('fr_stok_pesanan', function ($dta) {
                 $item = $this->forecasting_v1($dta->kodeitem, 30)['order_next'];
-                return $item . ' PCS';
+                return $item . ' ' . $dta->satuan;
             })->addColumn('action', function ($dta) {
                 return '<div class="text-center">
-				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Selengkapnya" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->kodeitem . '"><i class="bx bx-analyse"></i></button>
+				<a href="' . url('admin/forecasting/data-forecasting?kode=' . $dta->kodeitem) . '" role="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Selengkapnya"><i class="bx bx-analyse"></i></a>
 				</div>';
             })->rawColumns(['action'])->toJson();
         }
@@ -495,6 +495,103 @@ class AdminController extends Controller
             }
 
             return $title . ' ' . $lokasi;
+        } else if ($request->req == 'getForecastingItem') {
+            $gdn = DB::table('tbl_itemstok')->where('kodeitem', $request->kode)->where('kantor', 'GDN')->first();
+            $gdn = $gdn ? round($gdn->stok) : 0;
+            $utm = DB::table('tbl_itemstok')->where('kodeitem', $request->kode)->where('kantor', 'UTM')->first();
+            $utm = $utm ? round($utm->stok) : 0;
+            $barang = DB::table('tbl_item')->where('kodeitem', $request->kode)->select('stokmin', 'kodeitem', 'namaitem', 'satuan')->first();
+            $stok = ($gdn + $utm) < 0 ? 0 : ($gdn + $utm);
+            $stok_brg = $stok;
+            $stokmin = $barang ? round($barang->stokmin) : 0;
+            $satuan = $barang ? $barang->satuan : 0;
+
+            $date_now = '2022-06-04';
+            $date_first = date('Y-m-d', strtotime('-30 days', strtotime($date_now)));
+
+            // get jarak waktu
+            $frs = new DateTime($date_first);
+            $now = new DateTime($date_now);
+            $jarak = $now->diff($frs)->days;
+
+            $x = [];
+            $y = [];
+            $x2 = [];
+            $xy = [];
+            $date = $date_now;
+
+            for ($i = 1; $i <= $jarak; $i++) {
+                $date = date('Y-m-d', strtotime('+' . $i . ' days', strtotime($date_first)));
+
+                $get_jumlah = DB::table('tbl_ikdt')->join('tbl_ikhd', 'tbl_ikdt.notransaksi', '=', 'tbl_ikhd.notransaksi')->select('tbl_ikdt.jumlah')->where('tbl_ikhd.tipe', 'KSR')->where('tbl_ikdt.kodeitem', $request->kode)->whereDate('tbl_ikhd.tanggal', $date)->get();
+
+                $X = $i + 1;
+                $Y = 0;
+                foreach ($get_jumlah as $dta) {
+                    $Y += round($dta->jumlah);
+                }
+
+                $x[] = $X;
+                $y[] = $Y;
+                $x2[] = pow($X, 2);
+                $xy[] = $X * $Y;
+            }
+
+            $a = ((array_sum($y) * array_sum($x2)) - (array_sum($x) * array_sum($xy))) / ((count($x) * array_sum($x2)) - (pow(array_sum($x), 2)));
+            $b = ((count($x) * array_sum($xy)) - (array_sum($x) * array_sum($y))) / ((count($x) * array_sum($x2)) - (pow(array_sum($x), 2)));
+
+            $data_fr = [];
+            $date_next = $date_now;
+            $x_next = 0;
+            $j = 1;
+            while ($stokmin <= $stok) {
+                $date_next = date('Y-m-d', strtotime('+' . $j . ' days', strtotime($date)));
+                $x_next = count($x) + $j;
+                $fr = $a + ($b * $x_next);
+                $fr = ($fr <= 0) ? 1 : $fr;
+                $stok = $stok - $fr;
+                $stok_vw = round($stok) < 0 ? 0 : round($stok);
+
+                $data_fr[] = [
+                    "tggl" => date('d F Y', strtotime($date_next)),
+                    "fr" => round($fr) . ' ' . $satuan,
+                    "stok" => $stok_vw . ' ' . $satuan,
+                ];
+                $j++;
+            }
+
+            $priode_date = $date_next;
+            $order_next = 0;
+            $x_next2 = $x_next;
+            for ($l = 1; $l <= $request->priode; $l++) {
+                $priode_date = date('Y-m-d', strtotime('+' . $l . ' days', strtotime($date_next)));
+                $x_next2 = $x_next + $l;
+                $fr = $a + ($b * $x_next2);
+                $fr = ($fr <= 0) ? 1 : $fr;
+                $order_next += number_format($fr);
+            }
+
+            if ($request->priode == 7) $priode_ket = 'Priode 1 Minggu Berikutnya';
+            else if ($request->priode == 14) $priode_ket = 'Priode 2 Minggu Berikutnya';
+            else if ($request->priode == 21) $priode_ket = 'Priode 3 Minggu Berikutnya';
+            else if ($request->priode == 30) $priode_ket = 'Priode 1 Bulan Berikutnya';
+            else if ($request->priode == 60) $priode_ket = 'Priode 2 Bulan Berikutnya';
+
+            if ($barang) {
+                $result = [
+                    "fr_kodebarang" => $barang->kodeitem,
+                    "fr_namabarang" => $barang->namaitem,
+                    "fr_stok" => round($stok_brg) . ' ' . $barang->satuan,
+                    "fr_stokmin" => round($stokmin) . ' ' . $barang->satuan,
+                    "date_next" => date('d F Y', strtotime($date_next)),
+                    "order_next" => $order_next . ' ' . $barang->satuan,
+                    "priode_date" => date('d F Y', strtotime($priode_date)),
+                    "priode_ket" => $priode_ket,
+                    "data_fr" => $data_fr,
+                ];
+                return response()->json($result, 200);
+            } else return null;
+
         }
     }
 
