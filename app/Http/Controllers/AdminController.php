@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
 
+use App\Models\Admin;
 use App\Models\Barang;
 use App\Models\BarangKeluar;
 use App\Models\BarangMasuk;
@@ -38,6 +39,25 @@ class AdminController extends Controller
     public function pagedir_id($dir = NULL, $page, $id)
     {
         return view('admin/' . $dir . '/' . $page, compact('id'));
+    }
+
+    public  function update(Request $request, $target)
+    {
+        if ($target == 'akun') {
+            $akun = Admin::where('id', $request->id)->first();
+
+            if ($request->password == '') $except = ['_token', 'id', 'password'];
+            else {
+                $except = ['_token', 'id'];
+                $request['password'] = bcrypt($request->password);
+            }
+            foreach ($request->except($except) as $key => $data) {
+                $akun->$key = $data;
+            }
+            $akun->save();
+
+            return back()->with('success', 'Data akun berhasil diupdate');
+        }
     }
 
     public  function datatable(Request $request)
@@ -209,7 +229,7 @@ class AdminController extends Controller
                 return $item . ' PCS';
             })->addColumn('action', function ($dta) {
                 return '<div class="text-center">
-				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Buat Peramalan Lanjutan" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->kodeitem . '"><i class="bx bx-analyse"></i></button>
+				<button type="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Selengkapnya" data-toggle="modal" data-target=".modal-detail" data-id="' . $dta->kodeitem . '"><i class="bx bx-analyse"></i></button>
 				</div>';
             })->rawColumns(['action'])->toJson();
         }

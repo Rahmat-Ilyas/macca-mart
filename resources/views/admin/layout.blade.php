@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/css/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/toastr/toastr.min.css') }}" />
 
     <!-- Page CSS -->
 
@@ -183,7 +184,7 @@
                     <li class="menu-item" id="data-transaksi">
                         <a href="{{ url('admin/data-transaksi') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-barcode"></i>
-                            <div data-i18n="Basic">Data Transaksi</div>
+                            <div data-i18n="Basic">Transaksi Penjualan</div>
                         </a>
                     </li>
 
@@ -264,9 +265,10 @@
                                         <div class="dropdown-divider"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="#">
+                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                            data-bs-target=".modal-akun">
                                             <i class="bx bx-user me-2"></i>
-                                            <span class="align-middle">My Profile</span>
+                                            <span class="align-middle">Pengaturan Akun</span>
                                         </a>
                                     </li>
                                     <li>
@@ -314,6 +316,72 @@
     </div>
     <!-- / Layout wrapper -->
 
+    <div class="modal fade modal-akun" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel4">Pengaturan Akun</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-5">
+                    <table class="table table-bordered" id="detail-akun">
+                        <tbody>
+                            <tr>
+                                <td width="150">Nama Admin</td>
+                                <td width="10">:</td>
+                                <td>{{ Auth::user()->nama }}</td>
+                            </tr>
+                            <tr>
+                                <td>Username</td>
+                                <td>:</td>
+                                <td>{{ Auth::user()->username }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <form method="POST" action="{{ url('admin/update/akun') }}" id="edit-akun"
+                        hidden="">
+                        @csrf
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Nama</label>
+                            <div class="col-sm-9">
+                                <input type="hidden" name="id" value="{{ Auth::user()->id }}">
+                                <input type="text" name="nama" class="form-control" required=""
+                                    autocomplete="off" placeholder="Nama.." value="{{ Auth::user()->nama }}">
+                            </div>
+                        </div>
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Username</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="username" class="form-control" required=""
+                                    autocomplete="off" placeholder="Username.."
+                                    value="{{ Auth::user()->username }}">
+                            </div>
+                        </div>
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Password</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="password" class="form-control" placeholder="Password.."
+                                    autocomplete="off">
+                                <span class="text-info">Note: Biarkan kosong jika tidak diganti</span>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-3">
+                            <div class="col-sm-3"></div>
+                            <div class="col-sm-9">
+                                <button type="button" class="btn btn-secondary" id="btn-batal-edit">Batal</button>
+                                <button type="submit" class="btn btn-primary text-white">Simpan</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="text-center" id="akun-kontrol">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="button" class="btn btn-primary" id="btn-edit-akun">Edit Akun</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
@@ -329,6 +397,7 @@
     <script src="{{ asset('assets/vendor/libs/select2/js/select2.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/chartjs/chartjs.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/toastr/toastr.min.js') }}"></script>    
 
     <!-- Main JS -->
     <script src="{{ asset('assets/js/main.js') }}"></script>
@@ -342,10 +411,30 @@
     @yield('javascript')
 
     <script>
-
         $(document).ready(function() {
             $('[data-toggle1="tooltip"]').tooltip()
             $('.datatable').DataTable();
+
+            $('#btn-edit-akun').click(function(event) {
+                $('#edit-akun').removeAttr('hidden');
+                $('#detail-akun').attr('hidden', '');
+                $('#akun-kontrol').attr('hidden', '');
+            });
+
+            $('#btn-batal-edit').click(function(event) {
+                $('#edit-akun').attr('hidden', '');
+                $('#detail-akun').removeAttr('hidden');
+                $('#akun-kontrol').removeAttr('hidden');
+            });
+
+            @if (session('success'))
+                toastr.success('{{ session('success') }}.', "Berhasil");
+            @endif
+            @if ($errors->any())
+                @foreach ($errors->all() as $error)
+                    toastr.error('{{ $error }}.', "Gagal");
+                @endforeach
+            @endif
         });
     </script>
 

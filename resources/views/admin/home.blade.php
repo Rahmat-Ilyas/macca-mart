@@ -1,12 +1,89 @@
 @extends('admin.layout')
 @section('content')
     @php
-    $date = '2022-06-04';
-    $data1 = DB::table('tbl_ikdt')->select('total')->whereDate('dateupd', $date)->sum('total');
-    $data2 = DB::table('tbl_imdt')->select('total')->whereDate('dateupd', $date)->sum('total');
-    $data3 = DB::table('tbl_ikdt')->select('jumlah')->whereDate('dateupd', $date)->sum('jumlah');
-    $data4 = DB::table('tbl_itemstok')->select('stok')->sum('stok');
+    $date = '2022-06-04 12:45';
+    $data1 = DB::table('tbl_ikdt')
+        ->select('total')
+        ->whereDate('dateupd', $date)
+        ->sum('total');
+    $data2 = DB::table('tbl_imdt')
+        ->select('total')
+        ->whereDate('dateupd', $date)
+        ->sum('total');
+    $data3 = DB::table('tbl_ikdt')
+        ->select('jumlah')
+        ->whereDate('dateupd', $date)
+        ->sum('jumlah');
+    $data4 = DB::table('tbl_itemstok')
+        ->select('stok')
+        ->sum('stok');
 
+    $gdt = [];
+    $glb = [];
+    $gdtm = [];
+    $gdtk = [];
+    for ($i = 1; $i <= 6; $i++) {
+        $bln = $i;
+        if (date('m', strtotime($date)) > 6) {
+            $bln = $i + 6;
+        }
+
+        $dta1 = DB::table('tbl_ikdt')
+            ->select('total')
+            ->whereMonth('dateupd', $bln)
+            ->whereYear('dateupd', date('Y'))
+            ->sum('total');
+
+        $dta2 = DB::table('tbl_imdt')
+            ->select('total')
+            ->whereMonth('dateupd', $bln)
+            ->whereYear('dateupd', date('Y'))
+            ->sum('total');
+
+        $gdtm[] = round($dta1);
+        $gdtk[] = round($dta2);
+
+        $prft = round($dta1) - round($dta2);
+        $gdt[] = $prft;
+        $glb[] = "'" . date('M', strtotime(date('Y-' . $bln . '-d'))) . "'";
+    }
+    $data5 = implode(', ', $gdt);
+    $label1 = implode(', ', $glb);
+
+    $data6 = array_sum($gdtm);
+    $data7 = array_sum($gdtk);
+
+    // Page 2
+    $kategori = DB::table('tbl_ikdt')
+        ->join('tbl_item', 'tbl_ikdt.kodeitem', '=', 'tbl_item.kodeitem')
+        ->selectRaw('tbl_item.jenis, SUM(tbl_ikdt.jumlah) as jmlh, SUM(tbl_ikdt.total) as total')
+        ->groupBy('tbl_item.jenis')
+        ->whereDate('tbl_ikdt.dateupd', $date)
+        ->orderBy('jmlh', 'DESC')
+        ->limit(4)
+        ->get();
+
+    $gdt = [];
+    $glb = [];
+    foreach ($kategori as $i => $dta) {
+        $nama = DB::table('tbl_itemjenis')
+            ->where('jenis', $dta->jenis)
+            ->first()->jenis;
+        $gdt[] = round($dta->jmlh);
+        $glb[] = "'" . $nama . "'";
+    }
+
+    $data8 = implode(', ', $gdt);
+    $label2 = implode(', ', $glb);
+
+    $transaksi = DB::table('tbl_ikhd')
+        ->whereDate('dateupd', $date)
+        ->where('tipe', 'KSR')
+        ->orderBy('dateupd', 'DESC')
+        ->limit(6)
+        ->get();
+
+    $colors = ['primary', 'warning', 'info', 'secondary', 'danger', 'success'];
     @endphp
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -19,7 +96,8 @@
                                 <h5 class="card-title text-primary">Selamat Datang {{ Auth::user()->nama }}! 🎉</h5>
                                 <p class="mb-4">
                                     Sinkronisasi Database terakhir dilakukan pada <span
-                                        class="fw-bold">{{ date('d M Y H:i') }}</span> Harap lakukan sinkronisasi secara
+                                        class="fw-bold">{{ date('d M Y H:i', strtotime($date)) }}</span> Harap lakukan
+                                    sinkronisasi secara
                                     berkala!
                                 </p>
 
@@ -82,8 +160,8 @@
                         <div class="card h-100">
                             <div class="card-header d-flex align-items-center justify-content-between pb-0">
                                 <div class="card-title mb-0">
-                                    <h5 class="m-0 me-2">Order Statistics</h5>
-                                    <small class="text-muted">42.82k Total Sales</small>
+                                    <h5 class="m-0 me-2">Statik Penjualan Per Kategori</h5>
+                                    <small class="text-muted">{{ date('d F Y', strtotime($date)) }}</small>
                                 </div>
                                 <div class="dropdown">
                                     <button class="btn p-0" type="button" id="orederStatistics" data-bs-toggle="dropdown"
@@ -91,87 +169,49 @@
                                         <i class="bx bx-dots-vertical-rounded"></i>
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="orederStatistics">
-                                        <a class="dropdown-item" href="javascript:void(0);">Select All</a>
-                                        <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
-                                        <a class="dropdown-item" href="javascript:void(0);">Share</a>
+                                        <a class="dropdown-item"
+                                            href="{{ url('admin/analisis-penjualan/kategori-paling-laku') }}">Lihat
+                                            Selengkapnya</a>
                                     </div>
                                 </div>
                             </div>
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="d-flex flex-column align-items-center gap-1">
-                                        <h2 class="mb-2">8,258</h2>
-                                        <span>Total Orders</span>
+                                        <h2 class="mb-2">{{ number_format($data3) }}</h2>
+                                        <span>Total Item Terjual</span>
                                     </div>
-                                    <div id="orderStatisticsChart"></div>
+                                    <div id="statikPenjualan"></div>
                                 </div>
                                 <ul class="p-0 m-0">
-                                    <li class="d-flex mb-4 pb-1">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <span class="avatar-initial rounded bg-label-primary">
-                                                <i class="bx bx-mobile-alt"></i>
-                                            </span>
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <h6 class="mb-0">Electronic</h6>
-                                                <small class="text-muted">Mobile, Earbuds, TV</small>
+                                    @foreach ($kategori as $i => $dta)
+                                        @php
+                                            $kat = DB::table('tbl_itemjenis')
+                                                ->where('jenis', $dta->jenis)
+                                                ->first();
+                                        @endphp
+                                        <li class="d-flex mb-4 pb-1">
+                                            <div class="avatar flex-shrink-0 me-3">
+                                                <span class="avatar-initial rounded bg-label-{{ $colors[$i] }}">
+                                                    @if ($i % 2 == 1)
+                                                        <i class='bx bxs-category'></i>
+                                                    @else
+                                                        <i class='bx bxs-category-alt'></i>
+                                                    @endif
+                                                </span>
                                             </div>
-                                            <div class="user-progress">
-                                                <small class="fw-semibold">82.5k</small>
+                                            <div
+                                                class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                                <div class="me-2">
+                                                    <h6 class="mb-0">{{ ucwords(strtolower($kat->jenis)) }}</h6>
+                                                    <small class="text-muted">{{ $kat->ketjenis }}</small>
+                                                </div>
+                                                <div class="user-progress">
+                                                    <small class="fw-semibold">{{ round($dta->jmlh) }} Item</small>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                    <li class="d-flex mb-4 pb-1">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <span class="avatar-initial rounded bg-label-success"><i
-                                                    class="bx bx-closet"></i></span>
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <h6 class="mb-0">Fashion</h6>
-                                                <small class="text-muted">T-shirt, Jeans, Shoes</small>
-                                            </div>
-                                            <div class="user-progress">
-                                                <small class="fw-semibold">23.8k</small>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="d-flex mb-4 pb-1">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <span class="avatar-initial rounded bg-label-info"><i
-                                                    class="bx bx-home-alt"></i></span>
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <h6 class="mb-0">Decor</h6>
-                                                <small class="text-muted">Fine Art, Dining</small>
-                                            </div>
-                                            <div class="user-progress">
-                                                <small class="fw-semibold">849k</small>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="d-flex">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <span class="avatar-initial rounded bg-label-secondary">
-                                                <i class="bx bx-football"></i>
-                                            </span>
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <h6 class="mb-0">Sports</h6>
-                                                <small class="text-muted">Football, Cricket Kit</small>
-                                            </div>
-                                            <div class="user-progress">
-                                                <small class="fw-semibold">99</small>
-                                            </div>
-                                        </div>
-                                    </li>
+                                        </li>
+                                    @endforeach
                                 </ul>
                             </div>
                         </div>
@@ -182,123 +222,56 @@
                     <div class="col-md-6 order-2 mb-4">
                         <div class="card h-100">
                             <div class="card-header d-flex align-items-center justify-content-between">
-                                <h5 class="card-title m-0 me-2">Transactions</h5>
+                                <div class="card-title mb-0">
+                                    <h5 class="m-0 me-2">Transaksi Penjualan Terbaru</h5>
+                                    <small class="text-muted">{{ date('d F Y', strtotime($date)) }}</small>
+                                </div>
                                 <div class="dropdown">
                                     <button class="btn p-0" type="button" id="transactionID" data-bs-toggle="dropdown"
                                         aria-haspopup="true" aria-expanded="false">
                                         <i class="bx bx-dots-vertical-rounded"></i>
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="transactionID">
-                                        <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                                        <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-                                        <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
+                                        <a class="dropdown-item" href="{{ url('admin/data-transaksi') }}">Lihat
+                                            Selengkapnya</a>
                                     </div>
                                 </div>
                             </div>
                             <div class="card-body">
                                 <ul class="p-0 m-0">
-                                    <li class="d-flex mb-4 pb-1">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <img src="{{ asset('assets/img/icons/unicons/paypal.png') }}" alt="User"
-                                                class="rounded" />
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <small class="text-muted d-block mb-1">Paypal</small>
-                                                <h6 class="mb-0">Send money</h6>
+                                    @foreach ($transaksi as $i => $dta)
+                                        @php
+                                            $getitem = DB::table('tbl_ikdt')
+                                                ->join('tbl_item', 'tbl_ikdt.kodeitem', '=', 'tbl_item.kodeitem')
+                                                ->select('tbl_item.namaitem')
+                                                ->where('notransaksi', $dta->notransaksi);
+                                            $jumitem = count($getitem->get());
+                                            $item = substr($getitem->first()->namaitem, 0, 17);
+                                            $item = ucwords(strtolower($item));
+                                            if ($jumitem > 1) {
+                                                $jum = $jumitem-1;
+                                                $item = $item.', <b>'.$jum.'+ item</b>';
+                                            }
+                                        @endphp
+                                        <li class="d-flex mb-4 pb-1">
+                                            <div class="avatar flex-shrink-0 me-3">
+                                                <span class="avatar-initial rounded bg-label-success">
+                                                    <i class='bx bx-credit-card'></i>
+                                                </span>
                                             </div>
-                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                <h6 class="mb-0">+82.6</h6>
-                                                <span class="text-muted">USD</span>
+                                            <div
+                                                class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                                <div class="me-2">
+                                                    <h6 class="mb-1">#{{ $dta->notransaksi }}</h6>
+                                                    <small class="text-muted d-block mb-0">{!! $item !!}</small>
+                                                </div>
+                                                <div class="user-progress d-flex align-items-center gap-1">
+                                                    <span class="text-muted">+ RP</span>
+                                                    <h6 class="mb-0">{{ number_format($dta->totalakhir) }}</h6>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                    <li class="d-flex mb-4 pb-1">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <img src="{{ asset('assets/img/icons/unicons/wallet.png') }}" alt="User"
-                                                class="rounded" />
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <small class="text-muted d-block mb-1">Wallet</small>
-                                                <h6 class="mb-0">Mac'D</h6>
-                                            </div>
-                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                <h6 class="mb-0">+270.69</h6>
-                                                <span class="text-muted">USD</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="d-flex mb-4 pb-1">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <img src="{{ asset('assets/img/icons/unicons/chart.png') }}" alt="User"
-                                                class="rounded" />
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <small class="text-muted d-block mb-1">Transfer</small>
-                                                <h6 class="mb-0">Refund</h6>
-                                            </div>
-                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                <h6 class="mb-0">+637.91</h6>
-                                                <span class="text-muted">USD</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="d-flex mb-4 pb-1">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <img src="{{ asset('assets/img/icons/unicons/cc-success.png') }}"
-                                                alt="User" class="rounded" />
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <small class="text-muted d-block mb-1">Credit Card</small>
-                                                <h6 class="mb-0">Ordered Food</h6>
-                                            </div>
-                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                <h6 class="mb-0">-838.71</h6>
-                                                <span class="text-muted">USD</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="d-flex mb-4 pb-1">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <img src="{{ asset('assets/img/icons/unicons/wallet.png') }}" alt="User"
-                                                class="rounded" />
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <small class="text-muted d-block mb-1">Wallet</small>
-                                                <h6 class="mb-0">Starbucks</h6>
-                                            </div>
-                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                <h6 class="mb-0">+203.33</h6>
-                                                <span class="text-muted">USD</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="d-flex">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <img src="{{ asset('assets/img/icons/unicons/cc-warning.png') }}"
-                                                alt="User" class="rounded" />
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <div class="me-2">
-                                                <small class="text-muted d-block mb-1">Mastercard</small>
-                                                <h6 class="mb-0">Ordered Food</h6>
-                                            </div>
-                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                <h6 class="mb-0">-92.45</h6>
-                                                <span class="text-muted">USD</span>
-                                            </div>
-                                        </div>
-                                    </li>
+                                        </li>
+                                    @endforeach
                                 </ul>
                             </div>
                         </div>
@@ -346,21 +319,25 @@
                     <div class="col-12 mb-4">
                         <div class="card">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between flex-sm-row flex-column gap-3 pb-5">
-                                    <div
-                                        class="d-flex flex-sm-column flex-row align-items-start justify-content-between pb-5">
+                                <div class="d-flex justify-content-between flex-sm-row flex-column gap-3">
+                                    <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
                                         <div class="card-title">
-                                            <h5 class="text-nowrap mt-2 mb-3">Pendapatan</h5>
+                                            <h5 class="text-nowrap mt-2 mb-3">Profile Report</h5>
                                             <span class="badge bg-label-warning rounded-pill">Tahun
                                                 {{ date('Y') }}</span>
                                         </div>
-                                        <div class="mt-sm-auto">
-                                            <small class="text-success text-nowrap fw-semibold"><i
-                                                    class="bx bx-chevron-up"></i> 68.2%</small>
-                                            <h3 class="mb-0">Rp.84,686,000</h3>
-                                        </div>
                                     </div>
-                                    <div id="profileReportChart"></div>
+                                    <div id="totalPendapatan"></div>
+                                </div>
+                                <div class="mt-sm-auto mb-3">
+                                    <small class="text-success text-nowrap fw-semibold"><i
+                                            class="bx bx-chevron-up"></i>Pendapatan</small>
+                                    <h3 class="mb-0">Rp{{ number_format($data6) }}</h3>
+                                </div>
+                                <div class="mt-sm-auto mb-4">
+                                    <small class="text-danger text-nowrap fw-semibold"><i
+                                            class="bx bx-chevron-down"></i>Pengeluaran</small>
+                                    <h3 class="mb-0">Rp{{ number_format($data7) }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -376,6 +353,146 @@
     <script>
         $(document).ready(function() {
             $('#dashboard').addClass('active');
+
+            let cardColor, headingColor, axisColor, shadeColor, borderColor;
+
+            cardColor = config.colors.white;
+            headingColor = config.colors.headingColor;
+            axisColor = config.colors.axisColor;
+            borderColor = config.colors.borderColor;
+
+            const totalPendapatanEl = document.querySelector('#totalPendapatan'),
+                totalPendapatanConfig = {
+                    chart: {
+                        height: 80,
+                        // width: 175,
+                        type: 'line',
+                        toolbar: {
+                            show: false
+                        },
+                        dropShadow: {
+                            enabled: true,
+                            top: 10,
+                            left: 5,
+                            blur: 3,
+                            color: config.colors.warning,
+                            opacity: 0.15
+                        },
+                        sparkline: {
+                            enabled: true
+                        }
+                    },
+                    grid: {
+                        show: false,
+                        padding: {
+                            right: 8
+                        }
+                    },
+                    colors: [config.colors.warning],
+                    dataLabels: {
+                        enabled: false
+                    },
+                    stroke: {
+                        width: 4,
+                        curve: 'smooth'
+                    },
+                    series: [{
+                        data: [{{ $data5 }}]
+                    }],
+                    labels: [{!! $label1 !!}],
+                    xaxis: {
+                        show: false,
+                        lines: {
+                            show: false
+                        },
+                        labels: {
+                            show: false
+                        },
+                        axisBorder: {
+                            show: false
+                        }
+                    },
+                    yaxis: {
+                        show: false
+                    }
+                };
+            if (typeof totalPendapatanEl !== undefined && totalPendapatanEl !== null) {
+                const totalPendapatan = new ApexCharts(totalPendapatanEl, totalPendapatanConfig);
+                totalPendapatan.render();
+            }
+
+
+            // Order Statistics Chart
+            // --------------------------------------------------------------------
+            const chartOrderStatistics = document.querySelector('#statikPenjualan'),
+                orderChartConfig = {
+                    chart: {
+                        height: 175,
+                        width: 140,
+                        type: 'donut'
+                    },
+                    labels: [{!! $label2 !!}],
+                    series: [{{ $data8 }}],
+                    colors: [config.colors.primary, config.colors.warning, config.colors.info, config.colors
+                        .secondary
+                    ],
+                    stroke: {
+                        width: 5,
+                        colors: cardColor
+                    },
+                    dataLabels: {
+                        enabled: false,
+                        formatter: function(val, opt) {
+                            return parseInt(val);
+                        }
+                    },
+                    legend: {
+                        show: false
+                    },
+                    grid: {
+                        padding: {
+                            top: 0,
+                            bottom: 0,
+                            right: 15
+                        }
+                    },
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '75%',
+                                labels: {
+                                    show: true,
+                                    value: {
+                                        fontSize: '1.5rem',
+                                        fontFamily: 'Public Sans',
+                                        color: headingColor,
+                                        offsetY: -15,
+                                        formatter: function(val) {
+                                            return parseInt(val);
+                                        }
+                                    },
+                                    name: {
+                                        offsetY: 20,
+                                        fontFamily: 'Public Sans'
+                                    },
+                                    total: {
+                                        show: true,
+                                        fontSize: '0.8125rem',
+                                        color: config.colors.primary,
+                                        label: '{{ str_replace("'", '', explode(', ', $label2)[0]) }}',
+                                        formatter: function(w) {
+                                            return '{{ explode(', ', $data8)[0] }}';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+            if (typeof chartOrderStatistics !== undefined && chartOrderStatistics !== null) {
+                const statisticsChart = new ApexCharts(chartOrderStatistics, orderChartConfig);
+                statisticsChart.render();
+            }
         });
     </script>
 @endsection
