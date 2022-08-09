@@ -79,7 +79,7 @@
                         </a>
                     </li>
 
-                    <li class="menu-item" id="sinkron">
+                    <li class="menu-item" id="riwayat-sinkron">
                         <a href="{{ url('admin/riwayat-sinkron') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-sync"></i>
                             <div>Riwayat Sinkron</div>

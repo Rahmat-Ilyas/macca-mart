@@ -525,7 +525,7 @@ class AdminController extends Controller
 
                 $get_jumlah = DB::table('tbl_ikdt')->join('tbl_ikhd', 'tbl_ikdt.notransaksi', '=', 'tbl_ikhd.notransaksi')->select('tbl_ikdt.jumlah')->where('tbl_ikhd.tipe', 'KSR')->where('tbl_ikdt.kodeitem', $request->kode)->whereDate('tbl_ikhd.tanggal', $date)->get();
 
-                $X = $i + 1;
+                $X = $i;
                 $Y = 0;
                 foreach ($get_jumlah as $dta) {
                     $Y += round($dta->jumlah);
@@ -571,6 +571,20 @@ class AdminController extends Controller
                 $order_next += number_format($fr);
             }
 
+            // analisis error
+            $abs = [];
+            $sqr = [];
+            foreach ($y as $i => $dt) {
+                $fr = $a + ($b * ($i + 1));
+                $err = $dt - $fr;
+                $abs[] = abs($err);
+                $sqr[] = pow($err, 2);
+            }
+
+            $mad = array_sum($abs) / count($abs);
+            $mse = array_sum($sqr) / count($sqr);
+            $se = sqrt(array_sum($sqr) / count($sqr));
+
             if ($request->priode == 7) $priode_ket = 'Priode 1 Minggu Berikutnya';
             else if ($request->priode == 14) $priode_ket = 'Priode 2 Minggu Berikutnya';
             else if ($request->priode == 21) $priode_ket = 'Priode 3 Minggu Berikutnya';
@@ -583,6 +597,9 @@ class AdminController extends Controller
                     "fr_namabarang" => $barang->namaitem,
                     "fr_stok" => round($stok_brg) . ' ' . $barang->satuan,
                     "fr_stokmin" => round($stokmin) . ' ' . $barang->satuan,
+                    "er_mad" => number_format($mad, 2),
+                    "er_mse" => number_format($mse, 2),
+                    "er_se" => number_format($se, 2),
                     "date_next" => date('d F Y', strtotime($date_next)),
                     "order_next" => $order_next . ' ' . $barang->satuan,
                     "priode_date" => date('d F Y', strtotime($priode_date)),
@@ -624,7 +641,7 @@ class AdminController extends Controller
 
             $get_jumlah = DB::table('tbl_ikdt')->join('tbl_ikhd', 'tbl_ikdt.notransaksi', '=', 'tbl_ikhd.notransaksi')->select('tbl_ikdt.jumlah')->where('tbl_ikhd.tipe', 'KSR')->where('tbl_ikdt.kodeitem', $kodeitem)->whereDate('tbl_ikhd.tanggal', $date)->get();
 
-            $X = $i + 1;
+            $X = $i;
             $Y = 0;
             foreach ($get_jumlah as $dta) {
                 $Y += round($dta->jumlah);

@@ -14,7 +14,7 @@
             <h5 class="card-header pb-3">Data Forecating</h5>
             <hr>
             <div class="card-datatable table-responsive px-4 pb-4">
-                <div class="row">
+                <div class="row justify-content-between">
                     <div class="col-sm-6">
                         <label for="kodebarang"><b>Pilih Barang Yang Ingin Diproses</b></label>
                         <select name="kodebarang" id="kodebarang" class="select2 form-select">
@@ -25,62 +25,108 @@
                         </select>
                         <small class="text-info">* Silahkan pilih barang yang akan di proses (forecasting)</small>
                     </div>
+                    <div class="col-sm-4">
+                        <div class="alert alert-danger alert-dismissible mt-2 py-2 mb-4" role="alert" id="info-err" hidden="">
+                            <small>
+                                <strong>Analisis Error:</strong>
+                                <ul style="padding-left: 1rem" class="mb-0">
+                                    <li>Mean Absolute Error (MAE): <b id="er_mad">0.00</b></li>
+                                    <li>Mean Square Error (MSE): <b id="er_mse">0.00</b></li>
+                                    <li>Standard Error (SE): <b id="er_se">0.00</b></li>
+                                </ul>
+                            </small>
+                            <button type="button" class="btn-close"></button>
+                        </div>
+                    </div>
                 </div>
-                <hr>
-                <div class="row justify-content-between">
-                    <div class="col-8">
-                        <table class="table table-bordered">
+                <div class="row justify-content-between mt-2">
+                    <div class="col-7">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <b>Tanggal Sekarang</b>
+                                <span>{{ date('d F Y', strtotime($date)) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <b>Kode Barang</b>
+                                <span id="fr_kodebarang"><i>-Pilih barang terlebih dahulu-</i></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <b>Nama Barang</b>
+                                <span id="fr_namabarang"><i>-Pilih barang terlebih dahulu-</i></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <b>Stok Barang</b>
+                                <span id="fr_stok"><i>-Pilih barang terlebih dahulu-</i></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <b>Minimal Stok</b>
+                                <span id="fr_stokmin"><i>-Pilih barang terlebih dahulu-</i></span>
+                            </li>
+                        </ul>
+
+                        <hr>
+
+                        <h4 class="mb-2">Data Forecasting Penjualan Barang</h4>
+                        <table class="table table-bordered dataBarang" style="font-size: 12px;">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th width="10">No</th>
+                                    <th width="150">Tggl Selanjutnya</th>
+                                    <th>Perkiraan Terjual</th>
+                                    <th>Sisa Stok</th>
+                                </tr>
+                            </thead>
                             <tbody>
-                                <tr>
-                                    <td width="200">
-                                        <b>Tanggal Sekarang</b>
-                                    </td>
-                                    <td width="10">:</td>
-                                    <td>{{ date('d F Y', strtotime($date)) }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="200">
-                                        <b>Kode Barang</b>
-                                    </td>
-                                    <td>:</td>
-                                    <td id="fr_kodebarang"><i><small>-Pilih barang terlebih dahulu-</small></i></td>
-                                </tr>
-                                <tr>
-                                    <td width="200">
-                                        <b>Nama Barang</b>
-                                    </td>
-                                    <td>:</td>
-                                    <td id="fr_namabarang"><i><small>-Pilih barang terlebih dahulu-</small></i></td>
-                                </tr>
-                                <tr>
-                                    <td width="200">
-                                        <b>Stok Barang</b>
-                                    </td>
-                                    <td>:</td>
-                                    <td id="fr_stok"><i><small>-Pilih barang terlebih dahulu-</small></i></td>
-                                </tr>
-                                <tr>
-                                    <td width="200">
-                                        <b>Minimal Stok</b>
-                                    </td>
-                                    <td>:</td>
-                                    <td id="fr_stokmin"><i><small>-Pilih barang terlebih dahulu-</small></i></td>
-                                </tr>
+                                @for ($i = 1; $i <= 10; $i++)
+                                    <tr>
+                                        <td>{{ $i }}</td>
+                                        <td class="">
+                                            {{ date('d F Y', strtotime('+' . $i . ' days', strtotime($date))) }}</td>
+                                        <td class="text-center">--</td>
+                                        <td class="text-center">--</td>
+                                    </tr>
+                                @endfor
                             </tbody>
                         </table>
+
                     </div>
                     <div class="col-4">
-                        <h5 class="fw-bold mb-4 mt-2"><b>Rekomendasi Waktu Pemesanan Barang Selanjutnya:</b></h5>
-                        <div class="bg-secondary py-2 pr-0 rounded-3 text-center">
-                            <h1 class="fw-bold mt-2 mr-0 text-dark date_next">------</h1>
+                        <h5 class="fw-bold mb-3"><b>Rekomendasi Waktu Pemesanan Barang Selanjutnya:</b></h5>
+                        <div class="alert alert-dark text-center px-1" role="alert">
+                            <h1 class="fw-bold mt-2 text-dark date_next">------</h1>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-4">
+                            <label for="kodebarang"><b>Perkiraan Ketersediaan Stok Untuk Priode?</b></label>
+                            <select name="priode" id="priode" class="form-select">
+                                <option value="7">1 Minggu Berikutnya</option>
+                                <option value="14">2 Minggu Berikutnya</option>
+                                <option value="21">3 Minggu Berikutnya</option>
+                                <option value="30">1 Bulan Berikutnya</option>
+                                <option value="60">2 Bulan Berikutnya</option>
+                            </select>
+                        </div>
+                        <h5 class="fw-bold mb-4 mt-2"><b>Rekomendasi Stok Pemesanan Barang Selanjutnya:</b></h5>
+                        <div class="alert alert-dark text-center" role="alert">
+                            <h1 class="fw-bold mt-2 text-dark" id="order_next">------</h1>
+                        </div>
+                        <div class="mt-0">
+                            <small id="info-fr" hidden="">
+                                Rekomendasi jumlah stok barang yang harus di pesan pada tanggal <b
+                                    class="date_next">{{ date('d F Y') }}</b> untuk persediaan stok sampai tanggal <b
+                                    id="priode_date">{{ date('d F Y', strtotime('+7 days', strtotime($date))) }}</b> (<span
+                                    id="priode_ket">Priode 1 Minggu Berikutnya</span>)
+                            </small>
                         </div>
                     </div>
                 </div>
 
                 <hr>
 
-                <div class="row justify-content-between">
-                    <div class="col-8">
+                {{-- <div class="row justify-content-between">
+                    <div class="col-7">
                         <h4 class="mb-2">Data Forecasting Penjualan Barang</h4>
                         <table class="table table-bordered dataBarang" style="font-size: 12px;">
                             <thead class="table-secondary">
@@ -117,19 +163,19 @@
                             </select>
                         </div>
                         <h5 class="fw-bold mb-4 mt-2"><b>Rekomendasi Stok Pemesanan Barang Selanjutnya:</b></h5>
-                        <div class="bg-secondary px-3 py-2 pr-0 rounded-3 text-center">
-                            <h1 class="fw-bold mt-2 mr-0 text-dark" id="order_next">------</h1>
+                        <div class="alert alert-dark text-center" role="alert">
+                            <h1 class="fw-bold mt-2 text-dark" id="order_next">------</h1>
                         </div>
-                        <div class="mt-2">
-                            <span id="info-fr">
+                        <div class="mt-0">
+                            <small id="info-fr" hidden="">
                                 Rekomendasi jumlah stok barang yang harus di pesan pada tanggal <b
                                     class="date_next">{{ date('d F Y') }}</b> untuk persediaan stok sampai tanggal <b
-                                    id="priode_date">{{ date('d F Y', strtotime('+7 days', strtotime($date))) }}</b>
-                                <br>(<span id="priode_ket">Priode 1 Minggu Berikutnya</span>)
-                            </span>
+                                    id="priode_date">{{ date('d F Y', strtotime('+7 days', strtotime($date))) }}</b> (<span
+                                    id="priode_ket">Priode 1 Minggu Berikutnya</span>)
+                            </small>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -174,6 +220,11 @@
                 getData(kode, priode);
             });
 
+            $('.btn-close').click(function (e) { 
+                e.preventDefault();
+                $('#info-err').attr('hidden', '');
+            });
+
             @if (request()->get('kode'))
                 var kode = '{{ request()->get('kode') }}';
                 $('#kodebarang').val(kode).trigger('change');
@@ -211,6 +262,8 @@
                                 ]).draw(false);
                                 no++;
                             });
+                            $('#info-fr').removeAttr('hidden');
+                            $('#info-err').removeAttr('hidden');
                         } else {
                             dataTable.clear().draw();
                             @for ($i = 1; $i <= 10; $i++)
@@ -222,6 +275,7 @@
                                 ]).draw(false);
                             @endfor
                             $('#info-fr').attr('hidden', '');
+                            $('#info-err').attr('hidden', '');
                             $('#kodebarang').val(null);
                             $("#kodebarang").select2({
                                 placeholder: "-- Temukan Kode / Nama Barang --"
