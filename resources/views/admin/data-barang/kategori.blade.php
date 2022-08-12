@@ -6,11 +6,11 @@
     @endphp
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Data Barang /</span> List Data Barang</h4>
+        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Data Barang /</span> Kategori Barang</h4>
 
         <!-- Basic Bootstrap Table -->
         <div class="card">
-            <h5 class="card-header pb-3">Data Barang</h5>
+            <h5 class="card-header pb-3">Kategori Barang</h5>
             <hr>
             <div class="card-datatable table-responsive px-4 pb-4">
                 <table class="table table-striped dataBarang" style="font-size: 12px;">
