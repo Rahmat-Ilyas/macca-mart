@@ -309,56 +309,33 @@ class AdminController extends Controller
             $data = [];
             $produk = DB::table('tbl_ikdt')->selectRaw('kodeitem, SUM(jumlah) as jumlah, SUM(total) as total')->groupBy('kodeitem');
             if ($request->priode == 'harian') {
-                $produk = $produk->whereDate('dateupd', $request->waktu)->orderBy('jumlah', 'DESC')->limit(10)->get();
+                $produk = $produk->whereDate('dateupd', $request->waktu);
                 $title = 'Tanggal ' . date('d F Y', strtotime($request->waktu));
             } else if ($request->priode == 'bulanan') {
                 $waktu = explode('-', $request->waktu);
-                $produk = $produk->whereMonth('dateupd', $waktu[1])->whereYear('dateupd', $waktu[0])->orderBy('jumlah', 'DESC')->limit(10)->get();
+                $produk = $produk->whereMonth('dateupd', $waktu[1])->whereYear('dateupd', $waktu[0]);
                 $title = 'Bulan ' . date('F', strtotime($request->waktu . '-1')) . ' ' . $waktu[0];
             } else if ($request->priode == 'tahunan') {
-                $produk = $produk->whereYear('dateupd', $request->waktu)->orderBy('jumlah', 'DESC')->limit(10)->get();
+                $produk = $produk->whereYear('dateupd', $request->waktu);
                 $title = 'Tahun ' . $request->waktu;
             }
 
-            if ($request->priode == 'all') {
-                // $produk = DB::table('tbl_ikdt')->join('tbl_item', 'tbl_ikdt.kodeitem', '=', 'tbl_item.kodeitem')->selectRaw('tbl_ikdt.kodeitem, SUM(tbl_ikdt.jumlah) as jumlah, SUM(tbl_ikdt.total) as total')->groupBy('tbl_ikdt.kodeitem');
-                // $produk = $produk->orderBy('jumlah', 'ASC')->limit(500)->get();
+            $produk = $produk->orderBy('jumlah', 'DESC')->limit(10)->get();
 
-                $produk = DB::table('tbl_item')->select('kodeitem')->get();
-                foreach ($produk as $i => $dta) {
-                    $get_jum = DB::table('tbl_ikdt')->select('kodeitem', 'jumlah')->where('kodeitem', $dta->kodeitem)->get();
-                    $jumlah = 0;
-                    foreach ($get_jum as $jum) {
-                        $jumlah += round($jum->jumlah);
-                    }
-                    $nama = Barang::where('kodeitem', $dta->kodeitem)->first()->namaitem;
-                    $data[$i]['kodeitem'] = $dta->kodeitem;
-                    $data[$i]['nama'] = $nama;
-                    $data[$i]['jumlah'] = $jumlah;
-                }
-                $jml = array_column($data, 'jumlah');
-                array_multisort($jml, SORT_ASC, $data);
-
-                $title = '';
-            } else {
-                foreach ($produk as $i => $dta) {
-                    $nama = Barang::where('kodeitem', $dta->kodeitem)->first()->namaitem;
-                    $data[$i]['kodeitem'] = $dta->kodeitem;
-                    $data[$i]['nama'] = $nama;
-                    $data[$i]['jumlah'] = round($dta->jumlah);
-                    $data[$i]['total'] = 'Rp.' . number_format(round($dta->total));
-                }
+            foreach ($produk as $i => $dta) {
+                $nama = Barang::where('kodeitem', $dta->kodeitem)->first()->namaitem;
+                $data[$i]['kodeitem'] = $dta->kodeitem;
+                $data[$i]['nama'] = $nama;
+                $data[$i]['jumlah'] = round($dta->jumlah);
+                $data[$i]['total'] = 'Rp.' . number_format(round($dta->total));
             }
-
-            if ($request->get == 'plLaku') $n = 10;
-            else $n = 500;
 
             $result = [];
             $color = [];
             $label = [];
             $series = [];
             $data_fix = [];
-            for ($i = 0; $i < $n; $i++) {
+            for ($i = 0; $i < 10; $i++) {
                 if (count($data) > 0) {
                     $rand = str_pad(dechex(rand(0x000000, 0xffffff)), 6, 0, STR_PAD_LEFT);
                     $color[] = "#" . $rand;
@@ -370,6 +347,49 @@ class AdminController extends Controller
 
             $result = [
                 "title" => $title,
+                "color" => $color,
+                "label" => $label,
+                "series" => $series,
+                "data" => $data_fix,
+            ];
+
+            return response()->json($result, 200);
+        } else if ($request->req == 'getProdukKrLaku') {
+            // $produk = DB::table('tbl_ikdt')->join('tbl_item', 'tbl_ikdt.kodeitem', '=', 'tbl_item.kodeitem')->selectRaw('tbl_ikdt.kodeitem, SUM(tbl_ikdt.jumlah) as jumlah, SUM(tbl_ikdt.total) as total')->groupBy('tbl_ikdt.kodeitem');
+            // $produk = $produk->orderBy('jumlah', 'ASC')->limit(500)->get();
+            $produk = DB::table('tbl_item')->select('kodeitem')->get();
+            foreach ($produk as $i => $dta) {
+                $get_jum = DB::table('tbl_ikdt')->select('kodeitem', 'jumlah')->where('kodeitem', $dta->kodeitem)->get();
+                $jumlah = 0;
+                foreach ($get_jum as $jum) {
+                    $jumlah += round($jum->jumlah);
+                }
+                $nama = Barang::where('kodeitem', $dta->kodeitem)->first()->namaitem;
+                $data[$i]['kodeitem'] = $dta->kodeitem;
+                $data[$i]['nama'] = $nama;
+                $data[$i]['jumlah'] = $jumlah;
+            }
+            $jml = array_column($data, 'jumlah');
+            array_multisort($jml, SORT_ASC, $data);
+
+            $result = [];
+            $color = [];
+            $label = [];
+            $series = [];
+            $data_fix = [];
+            for ($i = 0; $i < 500;
+                $i++
+            ) {
+                if (count($data) > 0) {
+                    $rand = str_pad(dechex(rand(0x000000, 0xffffff)), 6, 0, STR_PAD_LEFT);
+                    $color[] = "#" . $rand;
+                    $label[] = $data[$i]['nama'];
+                    $series[] = $data[$i]['jumlah'];
+                    $data_fix[] = $data[$i];
+                }
+            }
+
+            $result = [
                 "color" => $color,
                 "label" => $label,
                 "series" => $series,

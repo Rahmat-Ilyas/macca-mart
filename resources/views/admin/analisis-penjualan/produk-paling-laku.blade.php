@@ -179,7 +179,6 @@
                     headers: headers,
                     data: {
                         req: 'getProdukLaku',
-                        get: 'plLaku',
                         priode: priode,
                         waktu: waktu,
                     },

@@ -132,9 +132,7 @@
                     cache: false,
                     headers: headers,
                     data: {
-                        req: 'getProdukLaku',
-                        get: 'krLaku',
-                        priode: 'all',
+                        req: 'getProdukKrLaku',
                     },
                     success: function(res) {
                         $('#lab-waktu').text(res.title);
