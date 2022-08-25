@@ -15,6 +15,9 @@ use App\Http\Controllers\Auth\LoginController;
 |
 */
 
+Route::get('/tes', function () {
+    return view('welcome');
+});
 Route::get('/', [AdminController::class, 'home']);
 Route::get('admin/', [AdminController::class, 'home']);
 Route::group(['prefix' => 'admin'], function () {
