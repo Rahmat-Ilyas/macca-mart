@@ -1,9 +1,8 @@
 @extends('admin.layout')
 @section('content')
     @php
-    $data = new App\Models\Kategori();
-    $kategori = $data->orderBy('jenis', 'asc')->get();
-    $date = '2022-06-04';
+        $data = new App\Models\Sinkron();
+        $sinkron = $data->orderBy('id', 'desc')->get();
     @endphp
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -26,30 +25,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>{{ date('d F Y', strtotime('2022-05-25')) }}</td>
-                                    <td>{{ date('H:i', strtotime('2022-05-25 14:22')) }}</td>
-                                    <td>1500 Data</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>{{ date('d F Y', strtotime('2022-05-30')) }}</td>
-                                    <td>{{ date('H:i', strtotime('2022-05-30 10:30')) }}</td>
-                                    <td>980 Data</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>{{ date('d F Y', strtotime('2022-06-02')) }}</td>
-                                    <td>{{ date('H:i', strtotime('2022-06-02 12:12')) }}</td>
-                                    <td>402 Data</td>
-                                </tr>
-                                <tr>
-                                    <td>4</td>
-                                    <td>{{ date('d F Y', strtotime('2022-06-04')) }}</td>
-                                    <td>{{ date('H:i', strtotime('2022-06-04 07:00')) }}</td>
-                                    <td>200 Data</td>
-                                </tr>
+                                @foreach ($sinkron as $i => $dta)
+                                    <tr>
+                                        <td>{{ $i + 1 }}</td>
+                                        <td>{{ date('d/m/Y', strtotime($dta->created_at)) }}</td>
+                                        <td>{{ date('H:i', strtotime($dta->created_at)) }}</td>
+                                        <td>{{ $dta->jumlah_data }} Data</td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>

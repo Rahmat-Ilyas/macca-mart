@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Auth\ApiTokenController;
+use App\Http\Controllers\ApiController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,6 +17,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::post('login', [ApiTokenController::class, 'login']);
+
+Route::group(['middleware' => ['auth:api']], function () {
+    Route::get('get-data-sinkron', [ApiController::class, 'data_sinkron']);
+    Route::get('get-last-date', [ApiController::class, 'tanggal_terakhir']);
+    Route::post('sinkron', [ApiController::class, 'sinkron']);
+});
+
+Route::fallback(function () {
+    return response()->json([
+        'success' => false,
+        'message' => 'URL Not Found'
+    ], 404);
 });

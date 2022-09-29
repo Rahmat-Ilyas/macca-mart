@@ -196,7 +196,7 @@ class AdminController extends Controller
                 return date('d/m/Y H:i', strtotime($dta->tanggal));
             })->addColumn('nama_akun', function ($dta) {
                 $akun = DB::table('tbl_perkiraan')->where('kodeacc', $dta->kodeacc)->first();
-                return $akun->namaacc;
+                return $akun ? $akun->namaacc : '-';
             })->addColumn('debet', function ($dta) {
                 return 'Rp.' . number_format($dta->debet, 2, ',', '.');
             })->addColumn('kredit', function ($dta) {
@@ -377,7 +377,9 @@ class AdminController extends Controller
             $label = [];
             $series = [];
             $data_fix = [];
-            for ($i = 0; $i < 500;
+            for (
+                $i = 0;
+                $i < 500;
                 $i++
             ) {
                 if (count($data) > 0) {
@@ -629,7 +631,6 @@ class AdminController extends Controller
                 ];
                 return response()->json($result, 200);
             } else return null;
-
         }
     }
 

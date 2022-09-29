@@ -1,89 +1,90 @@
 @extends('admin.layout')
 @section('content')
     @php
-    $date = '2022-06-04 12:45';
-    $data1 = DB::table('tbl_ikdt')
-        ->select('total')
-        ->whereDate('dateupd', $date)
-        ->sum('total');
-    $data2 = DB::table('tbl_imdt')
-        ->select('total')
-        ->whereDate('dateupd', $date)
-        ->sum('total');
-    $data3 = DB::table('tbl_ikdt')
-        ->select('jumlah')
-        ->whereDate('dateupd', $date)
-        ->sum('jumlah');
-    $data4 = DB::table('tbl_itemstok')
-        ->select('stok')
-        ->sum('stok');
-
-    $gdt = [];
-    $glb = [];
-    $gdtm = [];
-    $gdtk = [];
-    for ($i = 1; $i <= 6; $i++) {
-        $bln = $i;
-        if (date('m', strtotime($date)) > 6) {
-            $bln = $i + 6;
+        $date = '2022-06-04';
+        $data1 = DB::table('tbl_ikdt')
+            ->select('total')
+            ->whereDate('dateupd', $date)
+            ->sum('total');
+        // dd($data1);
+        $data2 = DB::table('tbl_imdt')
+            ->select('total')
+            ->whereDate('dateupd', $date)
+            ->sum('total');
+        $data3 = DB::table('tbl_ikdt')
+            ->select('jumlah')
+            ->whereDate('dateupd', $date)
+            ->sum('jumlah');
+        $data4 = DB::table('tbl_itemstok')
+            ->select('stok')
+            ->sum('stok');
+        
+        $gdt = [];
+        $glb = [];
+        $gdtm = [];
+        $gdtk = [];
+        for ($i = 1; $i <= 6; $i++) {
+            $bln = $i;
+            if (date('m', strtotime($date)) > 6) {
+                $bln = $i + 6;
+            }
+        
+            $dta1 = DB::table('tbl_ikdt')
+                ->select('total')
+                ->whereMonth('dateupd', $bln)
+                ->whereYear('dateupd', date('Y'))
+                ->sum('total');
+        
+            $dta2 = DB::table('tbl_imdt')
+                ->select('total')
+                ->whereMonth('dateupd', $bln)
+                ->whereYear('dateupd', date('Y'))
+                ->sum('total');
+        
+            $gdtm[] = round($dta1);
+            $gdtk[] = round($dta2);
+        
+            $prft = round($dta1) - round($dta2);
+            $gdt[] = $prft;
+            $glb[] = "'" . date('M', strtotime(date('Y-' . $bln . '-d'))) . "'";
         }
-
-        $dta1 = DB::table('tbl_ikdt')
-            ->select('total')
-            ->whereMonth('dateupd', $bln)
-            ->whereYear('dateupd', date('Y'))
-            ->sum('total');
-
-        $dta2 = DB::table('tbl_imdt')
-            ->select('total')
-            ->whereMonth('dateupd', $bln)
-            ->whereYear('dateupd', date('Y'))
-            ->sum('total');
-
-        $gdtm[] = round($dta1);
-        $gdtk[] = round($dta2);
-
-        $prft = round($dta1) - round($dta2);
-        $gdt[] = $prft;
-        $glb[] = "'" . date('M', strtotime(date('Y-' . $bln . '-d'))) . "'";
-    }
-    $data5 = implode(', ', $gdt);
-    $label1 = implode(', ', $glb);
-
-    $data6 = array_sum($gdtm);
-    $data7 = array_sum($gdtk);
-
-    // Page 2
-    $kategori = DB::table('tbl_ikdt')
-        ->join('tbl_item', 'tbl_ikdt.kodeitem', '=', 'tbl_item.kodeitem')
-        ->selectRaw('tbl_item.jenis, SUM(tbl_ikdt.jumlah) as jmlh, SUM(tbl_ikdt.total) as total')
-        ->groupBy('tbl_item.jenis')
-        ->whereDate('tbl_ikdt.dateupd', $date)
-        ->orderBy('jmlh', 'DESC')
-        ->limit(4)
-        ->get();
-
-    $gdt = [];
-    $glb = [];
-    foreach ($kategori as $i => $dta) {
-        $nama = DB::table('tbl_itemjenis')
-            ->where('jenis', $dta->jenis)
-            ->first()->jenis;
-        $gdt[] = round($dta->jmlh);
-        $glb[] = "'" . $nama . "'";
-    }
-
-    $data8 = implode(', ', $gdt);
-    $label2 = implode(', ', $glb);
-
-    $transaksi = DB::table('tbl_ikhd')
-        ->whereDate('dateupd', $date)
-        ->where('tipe', 'KSR')
-        ->orderBy('dateupd', 'DESC')
-        ->limit(6)
-        ->get();
-
-    $colors = ['primary', 'warning', 'info', 'secondary', 'danger', 'success'];
+        $data5 = implode(', ', $gdt);
+        $label1 = implode(', ', $glb);
+        
+        $data6 = array_sum($gdtm);
+        $data7 = array_sum($gdtk);
+        
+        // Page 2
+        $kategori = DB::table('tbl_ikdt')
+            ->join('tbl_item', 'tbl_ikdt.kodeitem', '=', 'tbl_item.kodeitem')
+            ->selectRaw('tbl_item.jenis, SUM(tbl_ikdt.jumlah) as jmlh, SUM(tbl_ikdt.total) as total')
+            ->groupBy('tbl_item.jenis')
+            ->whereDate('tbl_ikdt.dateupd', $date)
+            ->orderBy('jmlh', 'DESC')
+            ->limit(4)
+            ->get();
+        
+        $gdt = [];
+        $glb = [];
+        foreach ($kategori as $i => $dta) {
+            $nama = DB::table('tbl_itemjenis')
+                ->where('jenis', $dta->jenis)
+                ->first()->jenis;
+            $gdt[] = round($dta->jmlh);
+            $glb[] = "'" . $nama . "'";
+        }
+        
+        $data8 = implode(', ', $gdt);
+        $label2 = implode(', ', $glb);
+        
+        $transaksi = DB::table('tbl_ikhd')
+            ->whereDate('dateupd', $date)
+            ->where('tipe', 'KSR')
+            ->orderBy('dateupd', 'DESC')
+            ->limit(6)
+            ->get();
+        
+        $colors = ['primary', 'warning', 'info', 'secondary', 'danger', 'success'];
     @endphp
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -249,8 +250,8 @@
                                             $item = substr($getitem->first()->namaitem, 0, 17);
                                             $item = ucwords(strtolower($item));
                                             if ($jumitem > 1) {
-                                                $jum = $jumitem-1;
-                                                $item = $item.', <b>'.$jum.'+ item</b>';
+                                                $jum = $jumitem - 1;
+                                                $item = $item . ', <b>' . $jum . '+ item</b>';
                                             }
                                         @endphp
                                         <li class="d-flex mb-4 pb-1">

@@ -58,6 +58,9 @@ class Handler extends ExceptionHandler
             case 'admin':
                 return redirect()->guest(route('admin.login'));
                 break;
+            case 'api':
+                return response()->json(['error' => 'Unauthorised'], 401);
+                break;
         }
     }
 }
