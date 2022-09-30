@@ -22,6 +22,7 @@ Route::post('login', [ApiTokenController::class, 'login']);
 Route::group(['middleware' => ['auth:api']], function () {
     Route::get('get-data-sinkron', [ApiController::class, 'data_sinkron']);
     Route::get('get-last-date', [ApiController::class, 'tanggal_terakhir']);
+    Route::get('get-count-data', [ApiController::class, 'get_count_data']);
     Route::post('sinkron', [ApiController::class, 'sinkron']);
 });
 

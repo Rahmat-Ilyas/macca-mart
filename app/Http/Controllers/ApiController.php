@@ -40,6 +40,33 @@ class ApiController extends Controller
         ], 200);
     }
 
+    public function get_count_data()
+    {
+        $tbl_accjurnal = DB::table('tbl_accjurnal')->get()->count();
+        $tbl_ikdt = DB::table('tbl_ikdt')->get()->count();
+        $tbl_ikhd = DB::table('tbl_ikhd')->get()->count();
+        $tbl_imdt = DB::table('tbl_imdt')->get()->count();
+        $tbl_imhd = DB::table('tbl_imhd')->get()->count();
+        $tbl_item = DB::table('tbl_item')->get()->count();
+        $tbl_itemjenis = DB::table('tbl_itemjenis')->get()->count();
+        $tbl_itemstok = DB::table('tbl_itemstok')->get()->count();
+        $tbl_perkiraan = DB::table('tbl_perkiraan')->get()->count();
+        $tbl_supel = DB::table('tbl_supel')->get()->count();
+
+        return response()->json([
+            'tbl_accjurnal' => $tbl_accjurnal,
+            'tbl_ikdt' => $tbl_ikdt,
+            'tbl_ikhd' => $tbl_ikhd,
+            'tbl_imdt' => $tbl_imdt,
+            'tbl_imhd' => $tbl_imhd,
+            'tbl_item' => $tbl_item,
+            'tbl_itemjenis' => $tbl_itemjenis,
+            'tbl_itemstok' => $tbl_itemstok,
+            'tbl_perkiraan' => $tbl_perkiraan,
+            'tbl_supel' => $tbl_supel,
+        ], 200);
+    }
+
     public function sinkron(Request $request)
     {
         $total_data = 0;
