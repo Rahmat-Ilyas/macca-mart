@@ -42,16 +42,16 @@ class ApiController extends Controller
 
     public function get_count_data()
     {
-        $tbl_accjurnal = DB::table('tbl_accjurnal')->get()->count();
-        $tbl_ikdt = DB::table('tbl_ikdt')->get()->count();
-        $tbl_ikhd = DB::table('tbl_ikhd')->get()->count();
-        $tbl_imdt = DB::table('tbl_imdt')->get()->count();
-        $tbl_imhd = DB::table('tbl_imhd')->get()->count();
-        $tbl_item = DB::table('tbl_item')->get()->count();
-        $tbl_itemjenis = DB::table('tbl_itemjenis')->get()->count();
-        $tbl_itemstok = DB::table('tbl_itemstok')->get()->count();
-        $tbl_perkiraan = DB::table('tbl_perkiraan')->get()->count();
-        $tbl_supel = DB::table('tbl_supel')->get()->count();
+        $tbl_accjurnal = DB::table('tbl_accjurnal')->select('iddetail')->get()->count();
+        $tbl_ikdt = DB::table('tbl_ikdt')->select('iddetail')->get()->count();
+        $tbl_ikhd = DB::table('tbl_ikhd')->select('notransaksi')->get()->count();
+        $tbl_imdt = DB::table('tbl_imdt')->select('iddetail')->get()->count();
+        $tbl_imhd = DB::table('tbl_imhd')->select('notransaksi')->get()->count();
+        $tbl_item = DB::table('tbl_item')->select('tipe')->get()->count();
+        $tbl_itemjenis = DB::table('tbl_itemjenis')->select('jenis')->get()->count();
+        $tbl_itemstok = DB::table('tbl_itemstok')->select('stok')->get()->count();
+        $tbl_perkiraan = DB::table('tbl_perkiraan')->select('tipe')->get()->count();
+        $tbl_supel = DB::table('tbl_supel')->select('tipe')->get()->count();
 
         return response()->json([
             'tbl_accjurnal' => $tbl_accjurnal,

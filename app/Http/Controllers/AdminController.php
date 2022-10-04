@@ -357,46 +357,16 @@ class AdminController extends Controller
         } else if ($request->req == 'getProdukKrLaku') {
             // $produk = DB::table('tbl_ikdt')->join('tbl_item', 'tbl_ikdt.kodeitem', '=', 'tbl_item.kodeitem')->selectRaw('tbl_ikdt.kodeitem, SUM(tbl_ikdt.jumlah) as jumlah, SUM(tbl_ikdt.total) as total')->groupBy('tbl_ikdt.kodeitem');
             // $produk = $produk->orderBy('jumlah', 'ASC')->limit(500)->get();
-            $produk = DB::table('tbl_item')->select('kodeitem')->get();
-            foreach ($produk as $i => $dta) {
+            $produk = DB::table('tbl_item')->select('kodeitem', 'namaitem')->get();
+            $produk->map(function ($dta) {
                 $get_jum = DB::table('tbl_ikdt')->select('kodeitem', 'jumlah')->where('kodeitem', $dta->kodeitem)->get();
-                $jumlah = 0;
-                foreach ($get_jum as $jum) {
-                    $jumlah += round($jum->jumlah);
-                }
-                $nama = Barang::where('kodeitem', $dta->kodeitem)->first()->namaitem;
-                $data[$i]['kodeitem'] = $dta->kodeitem;
-                $data[$i]['nama'] = $nama;
-                $data[$i]['jumlah'] = $jumlah;
-            }
-            $jml = array_column($data, 'jumlah');
-            array_multisort($jml, SORT_ASC, $data);
+                $jumlah = $get_jum->reduce(function ($total, $value) {
+                    return $total += round($value->jumlah);
+                });
+                $dta->jumlah = $jumlah ? $jumlah : 0;
+            });
 
-            $result = [];
-            $color = [];
-            $label = [];
-            $series = [];
-            $data_fix = [];
-            for (
-                $i = 0;
-                $i < 500;
-                $i++
-            ) {
-                if (count($data) > 0) {
-                    $rand = str_pad(dechex(rand(0x000000, 0xffffff)), 6, 0, STR_PAD_LEFT);
-                    $color[] = "#" . $rand;
-                    $label[] = $data[$i]['nama'];
-                    $series[] = $data[$i]['jumlah'];
-                    $data_fix[] = $data[$i];
-                }
-            }
-
-            $result = [
-                "color" => $color,
-                "label" => $label,
-                "series" => $series,
-                "data" => $data_fix,
-            ];
+            $result = $produk->sortBy('jumlah')->values()->slice(0, 500);
 
             return response()->json($result, 200);
         } else if ($request->req == 'getKategoriLaku') {
