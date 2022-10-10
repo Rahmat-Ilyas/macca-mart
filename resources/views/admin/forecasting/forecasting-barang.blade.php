@@ -1,16 +1,16 @@
 @extends('admin.layout')
 @section('content')
     @php
-    $data = new App\Models\Kategori();
-    $kategori = $data->orderBy('jenis', 'asc')->get();
+        $data = new App\Models\Kategori();
+        $kategori = $data->orderBy('jenis', 'asc')->get();
     @endphp
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Forecating /</span> Forecating Barang</h4>
+        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Forecasting /</span> Forecasting Barang</h4>
 
         <!-- Basic Bootstrap Table -->
         <div class="card">
-            <h5 class="card-header pb-3">Forecating Barang</h5>
+            <h5 class="card-header pb-3">Forecasting Barang</h5>
             <hr>
             <div class="card-datatable table-responsive px-4 pb-4">
                 <div class="row">
