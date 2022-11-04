@@ -1,17 +1,17 @@
 @extends('admin.layout')
 @section('content')
     @php
-    $data = new App\Models\Barang();
-    $barang = $data->get();
-    $date = '2022-06-04';
+        $data = new App\Models\Barang();
+        $barang = $data->get();
+        $date = $today;
     @endphp
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Forecating /</span> Data Forecating</h4>
+        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Forecasting /</span> Data Forecasting</h4>
 
         <!-- Basic Bootstrap Table -->
         <div class="card">
-            <h5 class="card-header pb-3">Data Forecating</h5>
+            <h5 class="card-header pb-3">Data Forecasting</h5>
             <hr>
             <div class="card-datatable table-responsive px-4 pb-4">
                 <div class="row justify-content-between">
@@ -26,7 +26,8 @@
                         <small class="text-info">* Silahkan pilih barang yang akan di proses (forecasting)</small>
                     </div>
                     <div class="col-sm-4">
-                        <div class="alert alert-danger alert-dismissible mt-2 py-2 mb-4" role="alert" id="info-err" hidden="">
+                        <div class="alert alert-danger alert-dismissible mt-2 py-2 mb-4" role="alert" id="info-err"
+                            hidden="">
                             <small>
                                 <strong>Analisis Error:</strong>
                                 <ul style="padding-left: 1rem" class="mb-0">
@@ -220,7 +221,7 @@
                 getData(kode, priode);
             });
 
-            $('.btn-close').click(function (e) { 
+            $('.btn-close').click(function(e) {
                 e.preventDefault();
                 $('#info-err').attr('hidden', '');
             });

@@ -23,6 +23,15 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-sm-3">
+                        <label for="priode_perkiraan">Tampilkan Perkiraan Untuk Priode</label>
+                        <select name="priode_perkiraan" id="priode_perkiraan" class="form-select">
+                            <option value="SEMUA">Tampilkan Semua</option>
+                            <option value="harian">Harian Ini</option>
+                            <option value="bulanan">Minggu Ini</option>
+                            <option value="tahunan">Bulan Ini</option>
+                        </select>
+                    </div>
                 </div>
                 <hr>
                 <table class="table table-bordered dataBarang" style="font-size: 12px;">
@@ -74,16 +83,25 @@
                 "X-CSRF-TOKEN": "{{ csrf_token() }}"
             }
 
-            getData('SEMUA');
+            getData('SEMUA', 'SEMUA');
 
             $('#kategori').change(function(e) {
                 e.preventDefault();
 
                 var jenis = $(this).val();
-                getData(jenis);
+                var priode = $('#priode_perkiraan').val();
+                getData(jenis, priode);
             });
 
-            function getData(jenis) {
+            $('#priode_perkiraan').change(function(e) {
+                e.preventDefault();
+
+                var jenis = $('#kategori').val();
+                var priode = $(this).val();
+                getData(jenis, priode);
+            });
+
+            function getData(jenis, priode) {
                 $(".dataBarang").dataTable().fnDestroy();
                 $('.dataBarang').DataTable({
                     pageLength: 50,
@@ -96,7 +114,8 @@
                         headers: headers,
                         data: {
                             req: 'getFrBarang',
-                            jenis: jenis
+                            jenis: jenis,
+                            priode: priode,
                         },
                         async: true,
                         error: function(res) {},

@@ -1,7 +1,11 @@
 @extends('admin.layout')
 @section('content')
     @php
-        $date = '2022-06-04';
+        $last_sync = DB::table('sinkron')
+            ->select('created_at')
+            ->orderBy('id', 'desc')
+            ->first()->created_at;
+        $date = $today;
         $data1 = DB::table('tbl_ikdt')
             ->select('total')
             ->whereDate('dateupd', $date)
@@ -97,7 +101,7 @@
                                 <h5 class="card-title text-primary">Selamat Datang {{ Auth::user()->nama }}! 🎉</h5>
                                 <p class="mb-4">
                                     Sinkronisasi Database terakhir dilakukan pada <span
-                                        class="fw-bold">{{ date('d M Y H:i', strtotime($date)) }}</span> Harap lakukan
+                                        class="fw-bold">{{ date('d M Y H:i', strtotime($last_sync)) }}</span> Harap lakukan
                                     sinkronisasi secara
                                     berkala!
                                 </p>

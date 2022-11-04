@@ -19,11 +19,14 @@ class AdminController extends Controller
     public function __construct()
     {
         $this->middleware('auth:admin');
+        $this->today = date('Y-m-d', strtotime('2022-10-24'));
+        // $this->today = date('Y-m-d', strtotime('2022-06-04'));
     }
 
     public function home()
     {
-        return view('admin/home');
+        $today = $this->today;
+        return view('admin/home', compact('today'));
     }
 
     public function page($page)
@@ -33,7 +36,8 @@ class AdminController extends Controller
 
     public function pagedir($dir = NULL, $page)
     {
-        return view('admin/' . $dir . '/' . $page);
+        $today = $this->today;
+        return view('admin/' . $dir . '/' . $page, compact('today'));
     }
 
     public function pagedir_id($dir = NULL, $page, $id)
@@ -203,7 +207,7 @@ class AdminController extends Controller
                 return 'Rp.' . number_format($dta->kredit, 2, ',', '.');
             })->toJson();
         } else if ($request->req == 'getFrBarang') {
-            $result = DB::table('tbl_item')->join('tbl_itemstok', 'tbl_itemstok.kodeitem', '=', 'tbl_item.kodeitem')->selectRaw('tbl_item.*, SUM(tbl_itemstok.stok) as total_stok')->groupBy('tbl_item.kodeitem')->orderBy('total_stok', 'DESC');
+            $result = DB::table('tbl_item')->join('tbl_itemstok', 'tbl_itemstok.kodeitem', '=', 'tbl_item.kodeitem')->selectRaw('tbl_item.*, SUM(tbl_itemstok.stok) as total_stok')->groupBy('tbl_item.kodeitem');
             if ($request->jenis != 'SEMUA') {
                 $result = $result->where('jenis', $request->jenis);
             }
@@ -229,9 +233,27 @@ class AdminController extends Controller
                 return $item . ' ' . $dta->satuan;
             })->addColumn('action', function ($dta) {
                 return '<div class="text-center">
-				<a href="' . url('admin/forecasting/data-forecasting?kode=' . $dta->kodeitem) . '" role="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Selengkapnya"><i class="bx bx-analyse"></i></a>
-				</div>';
+            	<a href="' . url('admin/forecasting/data-forecasting?kode=' . $dta->kodeitem) . '" role="button" class="btn btn-info btn-sm waves-effect waves-light btn-detail" data-toggle1="tooltip" title="Lihat Selengkapnya"><i class="bx bx-analyse"></i></a>
+            	</div>';
             })->rawColumns(['action'])->toJson();
+
+            // $result = $result->get()->map(function ($dta) {
+            //     $gdn = DB::table('tbl_itemstok')->where('kodeitem', $dta->kodeitem)->where('kantor', 'GDN')->first();
+            //     $gdn = $gdn ? round($gdn->stok) : '0';
+            //     $utm = DB::table('tbl_itemstok')->where('kodeitem', $dta->kodeitem)->where('kantor', 'UTM')->first();
+            //     $utm = $utm ? round($utm->stok) : '0';
+            //     $dta->stok_gu = $gdn . ' / ' . $utm . ' (' . $dta->satuan . ')';
+            //     $dta->total_stok = round($dta->total_stok) . ' ' . $dta->satuan;
+            //     $dta->stokmin = round($dta->stokmin) . ' ' . $dta->satuan;
+            //     $tggl = $this->forecasting_v1($dta->kodeitem, 0)['date_next'];
+            //     $dta->rf_tggl_pesanan = date('d M Y', strtotime($tggl));
+            //     $item = $this->forecasting_v1($dta->kodeitem, 30)['order_next'];
+            //     $dta->fr_stok_pesanan = $item . ' ' . $dta->satuan;
+
+            //     return $dta;
+            // });
+
+            // dd($result);
         }
     }
 
@@ -500,7 +522,7 @@ class AdminController extends Controller
                 $stokmin = $barang ? round($barang->stokmin) : 0;
                 $satuan = $barang ? $barang->satuan : 0;
 
-                $date_now = '2022-06-04';
+                $date_now = $this->today;
                 $date_first = date('Y-m-d', strtotime('-30 days', strtotime($date_now)));
 
                 // get jarak waktu
@@ -614,7 +636,7 @@ class AdminController extends Controller
         $stok = $gdn + $utm;
         $stokmin = round($barang->stokmin);
 
-        $date_now = '2022-06-04';
+        $date_now = $this->today;
         $date_first = date('Y-m-d', strtotime('-30 days', strtotime($date_now)));
 
         // get jarak waktu
